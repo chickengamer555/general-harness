@@ -1,0 +1,147 @@
+{
+  "$schema": "../kernel/schemas/task-contract.schema.json",
+  "task": "self-scan-fidelity",
+  "title": "The integrity checks must not fire on code that merely discusses shortcuts",
+  "description": "Found by pointing the harness at its own repository. The shortcut scanners matched their markers inside string literals and comments, so a project that talks about focused tests - an assertion message, a doc comment, a test suite for a linter, or this harness itself - was reported as taking the shortcut. A check that cries wolf gets switched off, and a switched-off check catches nothing at all, so a false positive here costs more than a miss.",
+  "tier": "standard",
+  "clauses": [
+    {
+      "id": "B1",
+      "text": "A shortcut marker appearing inside a string literal must not be reported as a shortcut.",
+      "observable_by": "a test file containing the text of a skip marker inside an assertion message produces no skipped-test finding",
+      "rationale": "Assertion messages, documentation and test names routinely quote the very markers being detected. This harness's own suite tripped it, which is how the defect was found."
+    },
+    {
+      "id": "B2",
+      "text": "A shortcut marker that is commented out must not be reported as a shortcut.",
+      "observable_by": "a commented-out focused test produces no focused-test finding",
+      "rationale": "A commented-out focused test is not running, so it is not stopping any other test from running. Reporting it is noise, and noise is what teaches people to ignore the check."
+    },
+    {
+      "id": "B3",
+      "text": "Test source appearing inside a string literal must not be parsed as a test declaration.",
+      "observable_by": "a test that builds fixture source containing a test declaration is still credited with the assertions that follow it",
+      "rationale": "The declaration scan matched inside fixture strings, which truncated the enclosing test's body before its real assertions - so any test that constructs test source, which is exactly what a harness's own suite does, was reported as asserting nothing."
+    },
+    {
+      "id": "B4",
+      "text": "Suppressions, which are themselves comments, must still be detected.",
+      "observable_by": "a file containing a type-suppression comment still produces a suppression finding",
+      "rationale": "Guards against over-correcting B2. Blanking comments everywhere would make the suppression check - whose every target is a comment - silently detect nothing, replacing a false-positive problem with a far worse false-negative one."
+    },
+    {
+      "id": "B5",
+      "text": "A file may opt out of integrity scanning by declaring a reason, and every opt-out is reported in the run.",
+      "observable_by": "a file with a disable-file marker and a reason is not scanned, is counted, and is named in the output; the same marker with no reason has no effect",
+      "rationale": "Some files legitimately contain the patterns: a detector, a linter rule set, a security signature list, this harness's own quality.mjs. Blanking literals cannot help there, because the patterns are regex literals. An escape hatch is therefore necessary - but a silent one would be a hole, so it must cost a stated reason and must appear in the report."
+    },
+    {
+      "id": "B6",
+      "text": "A case may be declared a regression guard, meaning no red proof is expected for it, and guards are reported separately from proven cases.",
+      "observable_by": "checkRedProof does not list a guard case as missing, counts it under guards, and never counts it as proven",
+      "rationale": "Found while writing this contract: two of its own cases assert behaviour that must KEEP holding while something else changes, so by construction they were never red. With no way to say that, the run stays permanently red and the only ways out are deleting a legitimate test or fabricating a proof - the exact dishonesty the mechanism exists to prevent. Guards are counted separately so they can never be used to quietly replace proofs."
+    },
+    {
+      "id": "B7",
+      "text": "A catch block that states why it swallows is reported as a warning; one with nothing in it fails.",
+      "observable_by": "a documented catch produces a warning and no failure, while an empty one still fails",
+      "rationale": "An empty catch is an accident. A catch carrying a written reason is a deliberate engineering decision - best-effort cleanup, a restore that may legitimately fail. The check should target the accident. Keeping the documented one visible as a warning preserves the real point, that the failure is silent at runtime either way, without blocking a considered choice. Found when the fixed scanner flagged three deliberate, commented swallows in web-harness's own adapter."
+    }
+  ],
+  "units": [
+    {
+      "id": "quality-scanning",
+      "surface": "kernel/core/quality.mjs",
+      "tests": "test/quality.test.mjs",
+      "cases": [
+        {
+          "id": "marker-in-string",
+          "description": "a skip marker quoted inside an assertion message is not a skipped test",
+          "probe": true,
+          "maps_to_clause": "B1",
+          "test_name": "integrity ignores a shortcut marker written inside a string literal"
+        },
+        {
+          "id": "marker-in-comment",
+          "description": "a commented-out focused test is not running and is not reported",
+          "probe": true,
+          "maps_to_clause": "B2",
+          "test_name": "integrity ignores a shortcut marker that is commented out"
+        },
+        {
+          "id": "fixture-source-not-a-declaration",
+          "description": "test source inside a string does not truncate the enclosing test's body",
+          "probe": true,
+          "maps_to_clause": "B3",
+          "test_name": "integrity does not treat test source inside a string literal as a declaration"
+        },
+        {
+          "id": "suppressions-still-found",
+          "description": "GUARD: the fix for comments must not blind the suppression check. Never red - this behaviour already held and must keep holding.",
+          "maps_to_clause": "B4",
+          "test_name": "integrity still detects a suppression, which is itself a comment",
+          "guard": true
+        },
+        {
+          "id": "opt-out-with-reason",
+          "description": "a declared, reasoned opt-out excludes a file from scanning",
+          "maps_to_clause": "B5",
+          "test_name": "a file can opt out of integrity scanning with a stated reason"
+        },
+        {
+          "id": "opt-out-is-reported",
+          "description": "the run names the opted-out files rather than skipping them silently",
+          "maps_to_clause": "B5",
+          "test_name": "an opt-out is reported rather than applied silently"
+        },
+        {
+          "id": "opt-out-needs-a-reason",
+          "description": "GUARD: an opt-out with no stated reason has no effect. Passes vacuously before the escape hatch exists and becomes meaningful once it does, so it can never be honestly red.",
+          "probe": true,
+          "maps_to_clause": "B5",
+          "test_name": "an opt-out without a reason is refused",
+          "guard": true
+        },
+        {
+          "id": "guard-needs-no-proof",
+          "description": "a case marked as a guard is not reported as missing a red proof",
+          "probe": true,
+          "maps_to_clause": "B6",
+          "test_name": "checkRedProof does not demand a proof for a case marked as a guard"
+        },
+        {
+          "id": "guard-is-not-a-proof",
+          "description": "a guard is counted separately and never counted as proven",
+          "probe": true,
+          "maps_to_clause": "B6",
+          "test_name": "a guard case is still reported, so guards cannot quietly replace proofs"
+        },
+        {
+          "id": "guard-not-unmatched",
+          "description": "GUARD: recording red does not complain about a guard case that did not fail",
+          "guard": true,
+          "maps_to_clause": "B6",
+          "test_name": "recordRed does not report a guard case as unmatched"
+        },
+        {
+          "id": "documented-swallow-warns",
+          "description": "a catch with a written reason warns instead of failing",
+          "probe": true,
+          "maps_to_clause": "B7",
+          "test_name": "a catch that explains why it swallows is reported, but does not fail the run"
+        },
+        {
+          "id": "silent-swallow-fails",
+          "description": "GUARD: an undocumented empty catch must keep failing - the escape hatch must not weaken the check",
+          "guard": true,
+          "maps_to_clause": "B7",
+          "test_name": "an empty catch with no explanation still fails"
+        }
+      ]
+    }
+  ],
+  "non_goals": [
+    "Blanking regular-expression literals. Distinguishing a regex literal from a division operator needs real parsing, and getting it wrong would silently blind the scanners. The reasoned file-level opt-out covers that case explicitly and visibly instead.",
+    "A line-level opt-out. One escape hatch is enough; two make it easy to sprinkle exemptions until the check means nothing."
+  ]
+}

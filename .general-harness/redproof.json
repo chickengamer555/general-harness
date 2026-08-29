@@ -1,0 +1,203 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "task": "kernel-integrity",
+      "unit": "gate",
+      "case": "env-independent",
+      "key": "gate/env-independent",
+      "matched_test": "gate extracts individual failing test names from node --test",
+      "failed_at": "2026-08-29T09:27:01.332Z",
+      "contract_hash": "b81719e447809600641b0697bcf4fba43764d6cd79bb764eba05091ed3fe1b2a",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "kernel-integrity",
+      "unit": "gate",
+      "case": "missing-impl-is-red",
+      "key": "gate/missing-impl-is-red",
+      "matched_test": "gate reports a missing import in the code under test as FAIL, not BLOCKED",
+      "failed_at": "2026-08-29T09:27:01.332Z",
+      "contract_hash": "b81719e447809600641b0697bcf4fba43764d6cd79bb764eba05091ed3fe1b2a",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "kernel-integrity",
+      "unit": "gate",
+      "case": "reports-counts",
+      "key": "gate/reports-counts",
+      "matched_test": "gate reports counts for node --test",
+      "failed_at": "2026-08-29T09:27:01.332Z",
+      "contract_hash": "b81719e447809600641b0697bcf4fba43764d6cd79bb764eba05091ed3fe1b2a",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "kernel-integrity",
+      "unit": "gate",
+      "case": "extractors-testable",
+      "key": "gate/extractors-testable",
+      "matched_test": "the per-runner extractors are exported for direct testing",
+      "failed_at": "2026-08-29T09:27:01.332Z",
+      "contract_hash": "b81719e447809600641b0697bcf4fba43764d6cd79bb764eba05091ed3fe1b2a",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "kernel-integrity",
+      "unit": "gate",
+      "case": "parses-pytest",
+      "key": "gate/parses-pytest",
+      "matched_test": "gate extracts pytest failing node ids",
+      "failed_at": "2026-08-29T09:27:01.332Z",
+      "contract_hash": "b81719e447809600641b0697bcf4fba43764d6cd79bb764eba05091ed3fe1b2a",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "kernel-integrity",
+      "unit": "gate",
+      "case": "parses-go-and-cargo",
+      "key": "gate/parses-go-and-cargo",
+      "matched_test": "gate extracts go and cargo failing test names",
+      "failed_at": "2026-08-29T09:27:01.332Z",
+      "contract_hash": "b81719e447809600641b0697bcf4fba43764d6cd79bb764eba05091ed3fe1b2a",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "kernel-integrity",
+      "unit": "quality",
+      "case": "python-test-at-root",
+      "key": "quality/python-test-at-root",
+      "matched_test": "isTestFile recognises a python test file at the project root",
+      "failed_at": "2026-08-29T09:27:01.332Z",
+      "contract_hash": "b81719e447809600641b0697bcf4fba43764d6cd79bb764eba05091ed3fe1b2a",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "kernel-integrity",
+      "unit": "quality",
+      "case": "name-is-not-an-assertion",
+      "key": "quality/name-is-not-an-assertion",
+      "matched_test": "integrity finds a test with no assertion",
+      "failed_at": "2026-08-29T09:27:01.332Z",
+      "contract_hash": "b81719e447809600641b0697bcf4fba43764d6cd79bb764eba05091ed3fe1b2a",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "kernel-integrity",
+      "unit": "quality",
+      "case": "focused-and-assertion-free",
+      "key": "quality/focused-and-assertion-free",
+      "matched_test": "integrity finds an assertion-free test even when it is also focused",
+      "failed_at": "2026-08-29T09:27:01.332Z",
+      "contract_hash": "b81719e447809600641b0697bcf4fba43764d6cd79bb764eba05091ed3fe1b2a",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "kernel-integrity",
+      "unit": "quality",
+      "case": "support-modules-exempt",
+      "key": "quality/support-modules-exempt",
+      "matched_test": "integrity does not analyse test-support modules for missing assertions",
+      "failed_at": "2026-08-29T09:27:01.332Z",
+      "contract_hash": "b81719e447809600641b0697bcf4fba43764d6cd79bb764eba05091ed3fe1b2a",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "self-scan-fidelity",
+      "unit": "quality-scanning",
+      "case": "marker-in-string",
+      "key": "quality-scanning/marker-in-string",
+      "matched_test": "integrity ignores a shortcut marker written inside a string literal",
+      "failed_at": "2026-08-29T09:41:37.303Z",
+      "contract_hash": "a5933f0d9b852d00f66911985d3f4ef6670a2c0d96d4e659b90c16e409e2d154",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "self-scan-fidelity",
+      "unit": "quality-scanning",
+      "case": "marker-in-comment",
+      "key": "quality-scanning/marker-in-comment",
+      "matched_test": "integrity ignores a shortcut marker that is commented out",
+      "failed_at": "2026-08-29T09:41:37.303Z",
+      "contract_hash": "a5933f0d9b852d00f66911985d3f4ef6670a2c0d96d4e659b90c16e409e2d154",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "self-scan-fidelity",
+      "unit": "quality-scanning",
+      "case": "fixture-source-not-a-declaration",
+      "key": "quality-scanning/fixture-source-not-a-declaration",
+      "matched_test": "integrity does not treat test source inside a string literal as a declaration",
+      "failed_at": "2026-08-29T09:41:37.303Z",
+      "contract_hash": "a5933f0d9b852d00f66911985d3f4ef6670a2c0d96d4e659b90c16e409e2d154",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "self-scan-fidelity",
+      "unit": "quality-scanning",
+      "case": "opt-out-with-reason",
+      "key": "quality-scanning/opt-out-with-reason",
+      "matched_test": "a file can opt out of integrity scanning with a stated reason",
+      "failed_at": "2026-08-29T09:41:37.303Z",
+      "contract_hash": "a5933f0d9b852d00f66911985d3f4ef6670a2c0d96d4e659b90c16e409e2d154",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "self-scan-fidelity",
+      "unit": "quality-scanning",
+      "case": "opt-out-is-reported",
+      "key": "quality-scanning/opt-out-is-reported",
+      "matched_test": "an opt-out is reported rather than applied silently",
+      "failed_at": "2026-08-29T09:41:37.303Z",
+      "contract_hash": "a5933f0d9b852d00f66911985d3f4ef6670a2c0d96d4e659b90c16e409e2d154",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "self-scan-fidelity",
+      "unit": "quality-scanning",
+      "case": "guard-needs-no-proof",
+      "key": "quality-scanning/guard-needs-no-proof",
+      "matched_test": "checkRedProof does not demand a proof for a case marked as a guard",
+      "failed_at": "2026-08-29T09:41:37.303Z",
+      "contract_hash": "a5933f0d9b852d00f66911985d3f4ef6670a2c0d96d4e659b90c16e409e2d154",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "self-scan-fidelity",
+      "unit": "quality-scanning",
+      "case": "guard-is-not-a-proof",
+      "key": "quality-scanning/guard-is-not-a-proof",
+      "matched_test": "a guard case is still reported, so guards cannot quietly replace proofs",
+      "failed_at": "2026-08-29T09:41:37.303Z",
+      "contract_hash": "a5933f0d9b852d00f66911985d3f4ef6670a2c0d96d4e659b90c16e409e2d154",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "self-scan-fidelity",
+      "unit": "quality-scanning",
+      "case": "documented-swallow-warns",
+      "key": "quality-scanning/documented-swallow-warns",
+      "matched_test": "a catch that explains why it swallows is reported, but does not fail the run",
+      "failed_at": "2026-08-29T09:41:37.303Z",
+      "contract_hash": "a5933f0d9b852d00f66911985d3f4ef6670a2c0d96d4e659b90c16e409e2d154",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    }
+  ]
+}

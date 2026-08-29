@@ -88,6 +88,12 @@ export function recordRed(root, { task, contractHash, cases, testResult }) {
   const namesKnown = testResult.confidence !== CONFIDENCE.exitCodeOnly && testResult.failing.length > 0;
 
   for (const cs of cases) {
+    // A guard case asserts behaviour that must KEEP holding. By construction it
+    // was never red, so there is nothing to observe and nothing to report -
+    // listing it as unmatched every run would be noise that trains people to
+    // ignore the real unmatched cases.
+    if (cs.guard) continue;
+
     const hit = testResult.failing.find((n) => caseMatchesTest(cs, n));
 
     if (hit) {
@@ -145,8 +151,18 @@ export function checkRedProof(root, { task, contractHash, cases }) {
   const stale = [];
   const weak = [];
   const proven = [];
+  const guards = [];
 
   for (const cs of cases) {
+    // A guard is a regression check: behaviour that already held and must keep
+    // holding. Demanding a red proof for one leaves the run permanently red,
+    // and the only ways out would be deleting a legitimate test or fabricating
+    // a proof - the exact dishonesty this mechanism exists to prevent.
+    //
+    // Guards are counted separately and NEVER counted as proven, so they cannot
+    // be used to quietly stand in for the proofs that are genuinely missing.
+    if (cs.guard) { guards.push(cs); continue; }
+
     const e = forTask.find((x) => x.key === cs.key);
     if (!e) { missing.push(cs); continue; }
     if (e.contract_hash && contractHash && e.contract_hash !== contractHash) stale.push({ case: cs, proof: e });
@@ -154,7 +170,7 @@ export function checkRedProof(root, { task, contractHash, cases }) {
     proven.push({ case: cs, proof: e });
   }
 
-  return { proven, missing, stale, weak, total: cases.length };
+  return { proven, missing, stale, weak, guards, total: cases.length };
 }
 
 export function clearProofs(root, task = null) {

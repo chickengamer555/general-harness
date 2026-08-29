@@ -96,6 +96,8 @@ function printReport(report, { verbose }) {
         if (p.missing.length) bits.push(C.r + p.missing.length + ' never seen red' + C.x);
         if (p.stale.length) bits.push(C.y + p.stale.length + ' proven against an older contract' + C.x);
         if (p.weak.length) bits.push(C.y + p.weak.length + ' suite-level only' + C.x);
+        // Guards are shown on their own so they can never be mistaken for proofs.
+        if (p.guards?.length) bits.push(C.d + p.guards.length + ' guard' + C.x);
         console.log('      ' + pad(p.task, 22) + bits.join(', '));
         for (const m of p.missing.slice(0, 6)) {
           console.log('        ' + C.r + '?' + C.x + ' ' + m.key + C.d + ' - ' + m.description + C.x);
@@ -157,13 +159,17 @@ function cmdDetect(args) {
   console.log('  runner  ' + (r.runner ?? '-'));
   console.log('  gate    ' + (r.gateSource === 'config' ? 'from ' + CONFIG_FILE : r.gateSource));
   console.log('');
-  const entries = Object.entries(r.gate);
+  // A leg explicitly set to null in the config is disabled; showing it as
+  // "lint  null" reads like a broken command rather than a deliberate choice.
+  const entries = Object.entries(r.gate).filter(([, v]) => v);
+  const disabled = Object.entries(r.gate).filter(([, v]) => !v).map(([k]) => k);
   if (!entries.length) {
     console.log('  ' + C.y + 'no gate commands resolved.' + C.x);
     console.log('  Declare them in ' + CONFIG_FILE + ':');
     console.log(C.d + '    { "gate": { "test": "...", "lint": "...", "typecheck": "..." } }' + C.x);
   } else {
     for (const [k, v] of entries) console.log('  ' + pad(k, 12) + v);
+    for (const k of disabled) console.log('  ' + pad(k, 12) + C.d + '(disabled in ' + CONFIG_FILE + ')' + C.x);
   }
   console.log('');
   console.log(C.d + '  The harness runs the project\'s own tooling on purpose. It adds the' + C.x);
@@ -407,7 +413,8 @@ async function cmdSelftest() {
     ['assertionFree', 'test(s) with no assertion'],
     ['suppressions', 'suppression'],
     ['debugLeftovers', 'debug statement'],
-    ['swallowedErrors', 'swallowed error'],
+    ['swallowedErrors', 'silent swallowed error'],
+    ['explainedSwallows', 'deliberate swallowed error'],
   ];
   for (const [stat, label] of expected) {
     if (!shortcuts.stats[stat]) {

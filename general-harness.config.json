@@ -1,0 +1,21 @@
+{
+  "contractsDir": "verify",
+  "runner": "node-test",
+  "gate": {
+    "test": "node --test \"test/*.test.mjs\"",
+    "lint": null
+  },
+  "scanDirs": [
+    "kernel",
+    "test"
+  ],
+  "quality": {
+    "forbidFocusedTests": true,
+    "forbidSkippedTests": true,
+    "forbidAssertionFreeTests": true,
+    "forbidDebugLeftovers": "warn",
+    "forbidSuppressions": true,
+    "forbidSwallowedErrors": true,
+    "maxTodoMarkers": 0
+  }
+}

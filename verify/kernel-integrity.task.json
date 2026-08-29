@@ -1,0 +1,141 @@
+{
+  "$schema": "../kernel/schemas/task-contract.schema.json",
+  "task": "kernel-integrity",
+  "title": "Kernel defects found by dogfooding the harness on itself",
+  "description": "Eight defects found by pointing general-verify at its own kernel. Each one lets the harness report a verdict it has not earned - either by letting the environment change the answer, by classifying a genuine red state as unobservable, or by a check quietly failing to catch what it claims to catch. All eight are fixed test-first, and every case here was observed failing before it passed.",
+  "tier": "standard",
+  "clauses": [
+    {
+      "id": "A1",
+      "text": "The gate's verdict must not depend on the environment of whatever process invoked it.",
+      "observable_by": "a test that runs the gate from inside another test runner still sees the inner suite's real FAIL",
+      "rationale": "The gate inherited the parent environment wholesale, so NODE_TEST_CONTEXT leaked into the spawned runner and made a failing suite report success. A harness whose entire value is the verdict cannot let the caller's environment change it."
+    },
+    {
+      "id": "A2",
+      "text": "A test that fails because the code under test does not exist yet must be reported as FAIL, not BLOCKED.",
+      "observable_by": "a test importing a missing module yields verdict FAIL",
+      "rationale": "This is the classic TDD starting state and the primary workflow: write the test, watch it fail because nothing implements it yet, record the red proof. Classifying it BLOCKED made `general-verify red` refuse to record anything, breaking the mechanism the whole harness is built around."
+    },
+    {
+      "id": "A3",
+      "text": "The gate must report pass and fail counts whenever the runner prints them.",
+      "observable_by": "a run of node --test yields counts.passed and counts.failed"
+    },
+    {
+      "id": "A4",
+      "text": "Each runner's output parser must be testable directly, without spawning that toolchain.",
+      "observable_by": "extractForRunner is exported and returns the failing names for captured pytest, go and cargo output",
+      "rationale": "Output formats are the part of this kernel most likely to rot silently as runners change. A parser that can only be exercised by installing five toolchains will not be tested, and will therefore break unnoticed."
+    },
+    {
+      "id": "A5",
+      "text": "A Python test file must be recognised wherever the language permits one, not only under a tests directory.",
+      "observable_by": "isTestFile returns true for test_slugify.py at a project root",
+      "rationale": "A missed test file is scanned as source: its skipped tests are never reported, and its ordinary print statements are reported as shipped debug leftovers. The check fails in both directions at once."
+    },
+    {
+      "id": "A6",
+      "text": "The assertion-free check must not be satisfied by words appearing in a test's own name or in string literals.",
+      "observable_by": "a test named with the word 'asserts' whose body contains no assertion is still reported",
+      "rationale": "The searched body began at the declaration, so it included the test's own name. Any test named 'asserts ...', 'should ...' or 'throws ...' was silently exempted - which is a very large share of real test names, and precisely the ones a reviewer would assume were covered."
+    },
+    {
+      "id": "A7",
+      "text": "A focused or skipped test declaration must still be analysed for assertions.",
+      "observable_by": "a focused test with no assertion is reported by both the focused check and the assertion-free check",
+      "rationale": "The declaration pattern did not recognise a modifier like .only, so the worst combination available - a focused test that also asserts nothing - fell through the gap between the two checks."
+    },
+    {
+      "id": "A8",
+      "text": "A test-support module must not be analysed as though it were a test file.",
+      "observable_by": "a helpers module in the test directory that builds test source as strings produces no assertion-free findings",
+      "rationale": "Found while fixing A6. Helper, fixture and factory modules live in test directories and routinely contain test source as string literals - exactly the shape that fools a text-based analysis. A false positive here is worse than a miss: the first thing anyone does with a check that cries wolf is switch it off, after which it catches nothing at all."
+    }
+  ],
+  "units": [
+    {
+      "id": "gate",
+      "surface": "kernel/core/gate.mjs",
+      "tests": "test/gate.test.mjs",
+      "cases": [
+        {
+          "id": "env-independent",
+          "description": "the gate's result is unchanged by the invoking process's environment",
+          "probe": true,
+          "maps_to_clause": "A1",
+          "test_name": "gate extracts individual failing test names from node --test"
+        },
+        {
+          "id": "missing-impl-is-red",
+          "description": "a test importing a not-yet-written module is FAIL (the TDD red state), never BLOCKED",
+          "probe": true,
+          "maps_to_clause": "A2",
+          "test_name": "gate reports a missing import in the code under test as FAIL, not BLOCKED"
+        },
+        {
+          "id": "reports-counts",
+          "description": "pass and fail counts are parsed from the runner's summary",
+          "maps_to_clause": "A3",
+          "test_name": "gate reports counts for node --test"
+        },
+        {
+          "id": "extractors-testable",
+          "description": "the per-runner parsers are exported and can be exercised on captured output",
+          "maps_to_clause": "A4",
+          "test_name": "the per-runner extractors are exported for direct testing"
+        },
+        {
+          "id": "parses-pytest",
+          "description": "pytest node ids are extracted, and passing tests are not",
+          "maps_to_clause": "A4",
+          "test_name": "gate extracts pytest failing node ids"
+        },
+        {
+          "id": "parses-go-and-cargo",
+          "description": "go and cargo failing test names are extracted",
+          "maps_to_clause": "A4",
+          "test_name": "gate extracts go and cargo failing test names"
+        }
+      ]
+    },
+    {
+      "id": "quality",
+      "surface": "kernel/core/quality.mjs",
+      "tests": "test/quality.test.mjs",
+      "cases": [
+        {
+          "id": "python-test-at-root",
+          "description": "test_thing.py is recognised as a test file wherever it sits",
+          "maps_to_clause": "A5",
+          "test_name": "isTestFile recognises a python test file at the project root"
+        },
+        {
+          "id": "name-is-not-an-assertion",
+          "description": "a test whose NAME contains an assertion word but whose body has none is still caught",
+          "probe": true,
+          "maps_to_clause": "A6",
+          "test_name": "integrity finds a test with no assertion"
+        },
+        {
+          "id": "focused-and-assertion-free",
+          "description": "the worst combination - focused AND asserting nothing - is caught by both checks",
+          "probe": true,
+          "maps_to_clause": "A7",
+          "test_name": "integrity finds an assertion-free test even when it is also focused"
+        },
+        {
+          "id": "support-modules-exempt",
+          "description": "a helpers module in a test directory is not analysed for missing assertions",
+          "probe": true,
+          "maps_to_clause": "A8",
+          "test_name": "integrity does not analyse test-support modules for missing assertions"
+        }
+      ]
+    }
+  ],
+  "non_goals": [
+    "Contract, red-proof and stack-detection coverage. Those suites were written at the same time and passed immediately, so they are characterisation tests, not test-first work. They run in the gate and are deliberately NOT claimed as cases here - crediting them with red proofs they never earned would be exactly the dishonesty the red proof exists to prevent.",
+    "Adding new verifier categories. This contract is about the checks already claimed working actually working."
+  ]
+}

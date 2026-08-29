@@ -18,8 +18,13 @@ by projects, never the reverse.
 ## The gate
 
 ```sh
-npm run check      # selftest + the example verified with --require-red-proof
+npm run check      # selftest + SELF-verification + the example, all with red proofs enforced
+npm test           # just the kernel's own suite
 ```
+
+`check` runs three things: the selftest (integrity checks vs. the shortcut
+fixtures), **this repo verified by its own harness** (`verify/*.task.json`, red
+proofs in `.general-harness/`), and the bundled example. All three must be green.
 
 `selftest` runs the integrity checks against both example directories: the clean
 one must produce **no false positives**, and the shortcuts one must have **every
@@ -46,6 +51,15 @@ green is still trusted.
 - **BLOCKED is not FAIL.** Anywhere a command might fail to run at all, that path
   must produce BLOCKED with a reason. Reporting it as a failure sends someone to
   debug working code.
+- **The kernel's own suite lives in `test/`** and is verified by this harness.
+  A change to `core/` without a test is a change nobody can trust; the red proof
+  is what distinguishes a test that works from one that merely passes.
+- **Two escape hatches exist, and both are deliberately visible.**
+  `general-harness-disable-file: <reason>` excludes a file from scanning and is
+  named in every run (`kernel/core/quality.mjs` uses it — it IS the detector, and
+  its pattern tables are regex literals that blanking cannot neutralise).
+  `"guard": true` on a case means no red proof is expected. Never add either
+  without a written reason, and never to make a real finding go away.
 - **Vocabulary is shared on purpose** with `assembly-harness` and `web-harness`:
   contract, case, probe, verdict (PASS/FAIL/BLOCKED/SKIP), gate, matrix, handoff,
   score. Do not rename these locally.

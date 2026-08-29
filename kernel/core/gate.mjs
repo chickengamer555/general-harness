@@ -11,6 +11,39 @@
 import { spawnSync } from 'node:child_process';
 import { CONFIDENCE, VERDICT } from './types.mjs';
 
+/**
+ * Environment variables that a test runner sets in its OWN child processes to
+ * tell them they are running under it.
+ *
+ * These must be stripped before spawning the gate. If the harness is invoked
+ * from inside a test runner - which happens the moment anyone tests the harness
+ * itself, or runs it from a test-suite fixture - an inherited marker makes the
+ * spawned runner behave as a nested child: it reports results upward to a parent
+ * that is not listening, and exits 0 whatever happened.
+ *
+ * The failure is silent and total: a red suite is reported green. For a tool
+ * whose entire value is the verdict, letting the caller's environment change
+ * the answer is the worst bug available, so the scrub list is deliberately
+ * generous.
+ */
+const RUNNER_ENV_MARKERS = [
+  'NODE_TEST_CONTEXT',
+  'JEST_WORKER_ID',
+  'VITEST', 'VITEST_MODE', 'VITEST_POOL_ID', 'VITEST_WORKER_ID',
+  'PYTEST_CURRENT_TEST', 'PYTEST_XDIST_WORKER', 'PYTEST_XDIST_TESTRUNUID',
+  'TAP', 'TAP_CHILD_ID', 'TAP_BAIL',
+  'MOCHA_WORKER_ID',
+  'RUST_TEST_THREADS',
+  'GO_TEST_TIMEOUT_SCALE',
+];
+
+/** The environment the gate runs in: the caller's, minus anything that would change the verdict. */
+export function gateEnv(base = process.env) {
+  const env = { ...base, CI: '1', FORCE_COLOR: '0', NO_COLOR: '1' };
+  for (const k of RUNNER_ENV_MARKERS) delete env[k];
+  return env;
+}
+
 /** Run one shell command, capturing everything. Never throws. */
 export function run(command, cwd, timeoutMs = 600000) {
   const started = Date.now();
@@ -20,7 +53,7 @@ export function run(command, cwd, timeoutMs = 600000) {
     encoding: 'utf8',
     timeout: timeoutMs,
     maxBuffer: 32 * 1024 * 1024,
-    env: { ...process.env, CI: '1', FORCE_COLOR: '0', NO_COLOR: '1' },
+    env: gateEnv(),
   });
   return {
     command,
@@ -129,6 +162,25 @@ const EXTRACTORS = {
   },
 };
 
+/**
+ * Extract the failing test names from captured output for a named runner,
+ * falling back to the generic scraper.
+ *
+ * Exported because these parsers are the part of the kernel most likely to rot
+ * silently as runners change their output format, and a parser that can only be
+ * exercised by installing five separate toolchains will not be tested - so it
+ * will break unnoticed, and every red proof built on it will quietly weaken to
+ * exit-code-only evidence without anyone being told.
+ *
+ * @param {string|null} runner  runner id, or null to go straight to the generic scraper
+ * @param {string} out          combined stdout + stderr
+ * @returns {{names: string[], confidence: string}|null}
+ */
+export function extractForRunner(runner, out) {
+  const specific = runner && EXTRACTORS[runner] ? EXTRACTORS[runner](out) : null;
+  return specific ?? genericExtract(out);
+}
+
 /** Last resort: any recognisable failure marker at all. */
 function genericExtract(out) {
   const names = new Set();
@@ -148,6 +200,17 @@ function genericExtract(out) {
 /** Total/passed/failed counts, where the runner prints them. */
 function extractCounts(out) {
   let m;
+
+  // node:test prints a summary block whose lines are prefixed with an info
+  // glyph: "i pass 12" / "i fail 1". Matched first because the generic
+  // "N passed" patterns below never fire on it, which is how these counts went
+  // missing entirely.
+  const nodePass = out.match(/^[^\S\n]*\S?[^\S\n]*pass[^\S\n]+(\d+)[^\S\n]*$/m);
+  const nodeFail = out.match(/^[^\S\n]*\S?[^\S\n]*fail[^\S\n]+(\d+)[^\S\n]*$/m);
+  if (nodePass && nodeFail) {
+    return { passed: +nodePass[1], failed: +nodeFail[1] };
+  }
+
   if ((m = out.match(/Tests?:\s+(\d+)\s+failed[^\n]*?(\d+)\s+total/i))) {
     return { failed: +m[1], total: +m[2] };
   }
@@ -199,8 +262,7 @@ export function runTests(command, cwd, runner) {
     };
   }
 
-  const extracted =
-    (runner && EXTRACTORS[runner] ? EXTRACTORS[runner](out) : null) ?? genericExtract(out);
+  const extracted = extractForRunner(runner, out);
 
   return {
     ...r,
@@ -211,16 +273,31 @@ export function runTests(command, cwd, runner) {
   };
 }
 
+/**
+ * Did the RUNNER itself fail to launch?
+ *
+ * Every pattern here is launcher-level: the shell could not find the command,
+ * or the runner's own module is not installed. Nothing here can be produced by
+ * the code under test.
+ *
+ * That distinction is load-bearing. An earlier version also treated
+ * "Cannot find module" and a bare ENOENT as BLOCKED - but those are exactly what
+ * a test prints when it imports an implementation that has not been written yet,
+ * which is the classic TDD red state and the harness's primary workflow. Marking
+ * it BLOCKED made `general-verify red` refuse to record anything, so the first
+ * step of test-first development could never be proven. A missing module in the
+ * code under test is a genuine, recordable FAIL.
+ */
 function looksLikeMissingToolchain(out, code) {
   if (code === 0) return false;
   return [
     /command not found/i,
     /is not recognized as an internal or external command/i,
-    /No module named (pytest|mypy|ruff)/i,
-    /ENOENT/,
+    /No module named (pytest|mypy|ruff|bandit|pip_audit|unittest|nose)/i,
     /could not determine executable to run/i,
-    /npm ERR! Missing script/i,
-    /cannot find module/i,
+    /npm ERR!\s*Missing script/i,
+    /^\s*sh: .*: not found\s*$/im,
+    /No such file or directory\s*$/im,
   ].some((re) => re.test(out));
 }
 

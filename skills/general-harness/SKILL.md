@@ -136,9 +136,31 @@ unfamiliar repository can be destructive, and a question costs seconds.
 
 Exit: `0` green, `1` red, `2` the harness could not run.
 
+## When a check is wrong about the code
+
+Two escape hatches, both deliberately visible. Reach for either only with a
+written reason, and never to make a real finding go away:
+
+- **`general-harness-disable-file: <reason>`** in a file's first 20 lines
+  excludes it from every check, and is **named in the run output**. For files
+  that legitimately contain the patterns: a detector, a linter rule set, a
+  security signature list.
+- **`"guard": true`** on a contract case means "this already held and must keep
+  holding" — no red proof expected, because it was never red. Guards are counted
+  separately and never counted as proven.
+
+A catch block that **states why** it swallows is reported as a warning rather
+than a failure; an empty one still fails. An empty catch is an accident, a
+documented one is a decision, and the check targets the accident.
+
 ## Verify the harness itself
 
 `general-verify selftest` runs the integrity checks against a bundled fixture
 containing one instance of every shortcut they exist to catch, plus a clean unit
 that must produce no false positives. A check that has silently stopped working
 is worse than no check, because its green is still trusted.
+
+The harness is also **run against its own kernel** (`npm run check` in the repo),
+which is how 19 real defects in these two harnesses were found — including a gate
+that inherited its caller's environment and reported a failing suite as passing.
+If you are changing the kernel, that gate is the one that matters.

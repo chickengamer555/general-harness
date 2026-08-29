@@ -115,7 +115,7 @@ to make red go away.
 | **focused tests** (`.only`) | silently stops every other test in the file from running; suite still green |
 | **skipped tests** | a requirement that quietly stopped being checked |
 | **assertion-free tests** | passes as long as nothing throws; appears in coverage; proves nothing |
-| **swallowed errors** | an empty catch turns failure into silence — worse than a crash |
+| **swallowed errors** | an empty catch turns failure into silence — worse than a crash. A catch that *states why* is a decision, not an accident: reported as a warning, never a failure |
 | **suppressions** | `@ts-ignore`, `eslint-disable`, `# noqa` — a tool that was working, turned off |
 | **debug leftovers** | `console.log`, `print(`, `debugger` shipped by accident |
 
@@ -138,6 +138,49 @@ passing.
 Proofs record their own **confidence** — `exact`, `heuristic`, or
 `exit-code-only` — and a weak proof says so rather than implying it knew which
 case failed.
+
+### When a check is wrong about your code
+
+Two escape hatches, both deliberately visible:
+
+- **`general-harness-disable-file: <reason>`** in a file's first 20 lines excludes
+  it from every check. It costs a written reason, and every use is **named in the
+  run output** — a silent exemption is how a check quietly stops covering half a
+  codebase. This exists because some files legitimately contain the patterns: a
+  detector, a linter rule set, a security signature list. This harness's own
+  `quality.mjs` uses it, and says so on every run.
+- **`"guard": true`** on a case means "this behaviour already held and must keep
+  holding". No red proof is expected, because by construction it was never red.
+  Guards are counted separately and **never counted as proven**, so they cannot
+  stand in for the proofs that are genuinely missing.
+
+## The harness verifies itself
+
+```sh
+npm run check    # selftest + self-verification + the example, all with red proofs enforced
+```
+
+`general-verify` runs against its own kernel: a contract in `verify/`, real red
+proofs committed in `.general-harness/`, and the integrity leg pointed at its own
+source. It also verifies
+[`web-harness`](https://github.com/chickengamer555/web-harness), whose kernel is
+plain JavaScript that `web-verify` cannot grade.
+
+That exercise produced **21 clauses across three contracts — 19 real defects and
+2 capabilities the exercise showed were missing — with 25 recorded red proofs
+and 5 declared guards.** Every defect was observed failing before it was fixed.
+
+The two worst were both in this kernel:
+
+- the gate inherited `NODE_TEST_CONTEXT` from whatever process invoked it, so
+  running it from inside a test runner made a **failing suite report success** —
+  a total, silent failure of the one thing the tool exists to do;
+- a test failing because the implementation did not exist yet was classified
+  `BLOCKED` rather than `FAIL`, so `general-verify red` refused to record it —
+  breaking the first step of test-first development, which is the whole method.
+
+Neither was findable by reading the code. Both fell out of pointing the harness
+at itself.
 
 ## The contract
 
