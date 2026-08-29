@@ -1,0 +1,13 @@
+{
+  "name": "general-harness",
+  "owner": "chickengamer555",
+  "version": "1.0.0",
+  "description": "The general harness - harness discipline for any language, at any size, without conforming to a single coding style.",
+  "plugins": [
+    {
+      "name": "general-verify",
+      "description": "Task contracts, red proofs, the project's own gate, and integrity checks a test suite cannot run on itself. Any language; the harness borrows the runner you already trust.",
+      "source": "."
+    }
+  ]
+}

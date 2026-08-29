@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "handoff (Builder -> Critic, one per turn)",
+  "description": "The Builder's steering input to the Critic. It is NOT a summary of what was done - it is a set of pointed requests aimed at what a green gate structurally cannot see. A vague handoff buys a useless review and wastes a turn.",
+  "type": "object",
+  "required": ["turn", "task", "changes", "tests_added", "verification_requests", "builder_self_verdict"],
+  "properties": {
+    "turn": { "type": "integer", "minimum": 1 },
+    "task": { "type": "string" },
+    "run_id": { "type": "string" },
+
+    "changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "what"],
+        "properties": {
+          "path": { "type": "string" },
+          "what": { "type": "string" }
+        }
+      }
+    },
+
+    "tests_added": {
+      "type": "array",
+      "description": "MANDATORY and complete. Every test written or changed this turn, with the case it proves and whether it was observed failing first. A test added without a red observation has not been shown to be wired to anything, and saying so here is cheaper than having the Critic find it.",
+      "items": {
+        "type": "object",
+        "required": ["test", "maps_to_case", "was_red_first"],
+        "properties": {
+          "test": { "type": "string" },
+          "maps_to_case": { "type": "string" },
+          "was_red_first": { "type": "boolean" },
+          "why_not_red": {
+            "type": "string",
+            "description": "Required when was_red_first is false. The honest reason - not an excuse, just the reason."
+          }
+        }
+      }
+    },
+
+    "verification_requests": {
+      "type": "array",
+      "description": "Concrete asks pointing at what the gate cannot see. 'Check the tests' is worthless - they already ran. 'The empty-input test asserts equal(result, \"\") but the stub also returned \"\"; confirm it would fail against a wrong implementation' is the shape.",
+      "items": { "type": "string" }
+    },
+
+    "known_gaps": {
+      "type": "array",
+      "description": "The honesty channel. A gap disclosed here is weighed far more leniently than the same gap found by the Critic.",
+      "items": {
+        "type": "object",
+        "required": ["case_id", "gap"],
+        "properties": {
+          "case_id": { "type": "string" },
+          "gap": { "type": "string" }
+        }
+      }
+    },
+
+    "shortcuts_taken": {
+      "type": "array",
+      "description": "Any skip, focus, suppression, disabled check or loosened assertion introduced this turn, with its justification. Leaving one out is a trust violation rather than an oversight: these are precisely the moves that make a green run meaningless, and the integrity leg will find them anyway.",
+      "items": {
+        "type": "object",
+        "required": ["what", "where", "why"],
+        "properties": {
+          "what": { "type": "string" },
+          "where": { "type": "string" },
+          "why": { "type": "string" }
+        }
+      }
+    },
+
+    "assumptions_made": { "type": "array", "items": { "type": "string" } },
+
+    "builder_self_verdict": {
+      "enum": ["pass", "more_work"],
+      "description": "pass only when the Builder believes the contract is fully met. Termination needs this AND two consecutive Critic passes."
+    }
+  }
+}

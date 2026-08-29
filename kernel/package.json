@@ -1,0 +1,15 @@
+{
+  "name": "general-verify",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Stack-agnostic verification kernel: task contracts, red proofs, gate normalisation, and static integrity checks. Zero runtime dependencies.",
+  "main": "matrix.mjs",
+  "bin": { "general-verify": "bin/general-verify.mjs" },
+  "exports": {
+    ".": "./matrix.mjs",
+    "./core": "./core/contract.mjs",
+    "./types": "./core/types.mjs",
+    "./quality": "./core/quality.mjs"
+  },
+  "license": "MIT"
+}

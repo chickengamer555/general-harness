@@ -1,0 +1,16 @@
+{
+  "name": "general-harness",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A stack-agnostic harness: contract first, red proof, the project's own test gate, and integrity checks a test suite cannot run on itself.",
+  "bin": { "general-verify": "kernel/bin/general-verify.mjs" },
+  "scripts": {
+    "verify": "node kernel/bin/general-verify.mjs",
+    "lint": "node kernel/bin/general-verify.mjs lint",
+    "selftest": "node kernel/bin/general-verify.mjs selftest",
+    "check": "node kernel/bin/general-verify.mjs selftest && node kernel/bin/general-verify.mjs --dir example --require-red-proof"
+  },
+  "engines": { "node": ">=20" },
+  "license": "MIT"
+}

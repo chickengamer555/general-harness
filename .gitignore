@@ -1,0 +1,19 @@
+node_modules/
+dist/
+build/
+out/
+target/
+coverage/
+__pycache__/
+*.log
+.DS_Store
+Thumbs.db
+.env
+.env.*
+verify/runs/
+*.tmp
+
+# NOTE: .general-harness/redproof.json is deliberately NOT ignored.
+# A red proof is evidence, and evidence belongs in the repository - CI needs it
+# to run `--require-red-proof`, and a reviewer needs it to see that a test was
+# ever actually red.

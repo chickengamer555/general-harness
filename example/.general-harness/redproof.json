@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "task": "slugify",
+      "unit": "slugify",
+      "case": "handles-ordinary-input",
+      "key": "slugify/handles-ordinary-input",
+      "matched_test": "slugify handles ordinary input",
+      "failed_at": "2026-08-29T09:00:35.702Z",
+      "contract_hash": "1913f6d46e34f9196ef74470e8dd845116b629395a82b350a4f44ad86168555a",
+      "gate_command": "node --test clean/test/slugify.test.mjs",
+      "confidence": "exact"
+    },
+    {
+      "task": "slugify",
+      "unit": "slugify",
+      "case": "collapses-repeated-separators",
+      "key": "slugify/collapses-repeated-separators",
+      "matched_test": "slugify collapses repeated separators",
+      "failed_at": "2026-08-29T09:00:35.702Z",
+      "contract_hash": "1913f6d46e34f9196ef74470e8dd845116b629395a82b350a4f44ad86168555a",
+      "gate_command": "node --test clean/test/slugify.test.mjs",
+      "confidence": "exact"
+    },
+    {
+      "task": "slugify",
+      "unit": "slugify",
+      "case": "handles-empty-input",
+      "key": "slugify/handles-empty-input",
+      "matched_test": "slugify handles empty input",
+      "failed_at": "2026-08-29T09:00:35.702Z",
+      "contract_hash": "1913f6d46e34f9196ef74470e8dd845116b629395a82b350a4f44ad86168555a",
+      "gate_command": "node --test clean/test/slugify.test.mjs",
+      "confidence": "exact"
+    },
+    {
+      "task": "slugify",
+      "unit": "slugify",
+      "case": "strips-unicode-punctuation",
+      "key": "slugify/strips-unicode-punctuation",
+      "matched_test": "slugify strips unicode punctuation",
+      "failed_at": "2026-08-29T09:00:35.702Z",
+      "contract_hash": "1913f6d46e34f9196ef74470e8dd845116b629395a82b350a4f44ad86168555a",
+      "gate_command": "node --test clean/test/slugify.test.mjs",
+      "confidence": "exact"
+    }
+  ]
+}

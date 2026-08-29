@@ -1,0 +1,140 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "score (Critic verdict, one per turn)",
+  "description": "The Critic's turn output. There is no weighted total on purpose: the gate already answers 'do the tests pass?', so re-grading that with invented numbers adds noise and false confidence. The instrument is narrative gaps plus a verdict.",
+  "type": "object",
+  "required": [
+    "turn",
+    "task",
+    "stance",
+    "gate_verdict",
+    "verdict",
+    "gaps_the_gate_cannot_see"
+  ],
+  "properties": {
+    "turn": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "task": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "stance": {
+      "type": "string",
+      "description": "This turn's adversarial stance from the rotation. Rotation is the anti-collusion defence, not decoration."
+    },
+    "gate_verdict": {
+      "enum": [
+        "green",
+        "red"
+      ],
+      "description": "Derived from the orchestrator's verification file, never from the Builder's claim."
+    },
+    "tests_reviewed": {
+      "type": "array",
+      "description": "Every test the Builder added or changed, read and judged. 'tautological' means it would pass against an obviously wrong implementation - the most common way a green suite proves nothing.",
+      "items": {
+        "type": "object",
+        "required": [
+          "test",
+          "assessment"
+        ],
+        "properties": {
+          "test": {
+            "type": "string"
+          },
+          "assessment": {
+            "enum": [
+              "honest",
+              "weak",
+              "tautological",
+              "assertion-free"
+            ]
+          },
+          "evidence": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "red_proof_reviewed": {
+      "type": "object",
+      "description": "Was each case actually observed failing before it passed, and does the recorded proof still match the current contract?",
+      "properties": {
+        "all_cases_proven": {
+          "type": "boolean"
+        },
+        "weak_proofs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "answers_to_requests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "request",
+          "answer"
+        ],
+        "properties": {
+          "request": {
+            "type": "string"
+          },
+          "answer": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "gaps_the_gate_cannot_see": {
+      "type": "array",
+      "description": "The Critic's core output: honest gaps a green gate does not catch, tied to a clause or case id wherever possible.",
+      "items": {
+        "type": "object",
+        "required": [
+          "gap"
+        ],
+        "properties": {
+          "gap": {
+            "type": "string"
+          },
+          "clause_id": {
+            "type": "string"
+          },
+          "case_id": {
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          }
+        }
+      }
+    },
+    "verdict": {
+      "enum": [
+        "pass",
+        "revise",
+        "block"
+      ],
+      "description": "pass = gate green AND no blocking gap. revise = specific fixable issues (the common mid-loop verdict). block = fundamental: a clause has no honest test, a test is tautological, a shortcut was taken to go green, or the contract is unsatisfiable."
+    },
+    "highest_impact_change": {
+      "type": "string",
+      "description": "REQUIRED when verdict is not pass. One concrete, single-turn-actionable sentence. 'Improve it' wastes a turn."
+    }
+  }
+}

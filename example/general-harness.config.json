@@ -1,0 +1,19 @@
+{
+  "contractsDir": "verify",
+  "runner": "node-test",
+  "gate": {
+    "test": "node --test clean/test/slugify.test.mjs"
+  },
+  "scanDirs": [
+    "clean"
+  ],
+  "quality": {
+    "forbidFocusedTests": true,
+    "forbidSkippedTests": true,
+    "forbidAssertionFreeTests": "warn",
+    "forbidDebugLeftovers": "warn",
+    "forbidSuppressions": "warn",
+    "forbidSwallowedErrors": true,
+    "maxTodoMarkers": -1
+  }
+}

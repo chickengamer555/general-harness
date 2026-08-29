@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "verification (orchestrator-produced gate rollup, one per turn)",
+  "description": "Written by the ORCHESTRATOR between agent turns by running general-verify itself. Both agents read this same file, which is what makes a fabricated verdict structurally impossible rather than merely discouraged. Neither agent may write into this namespace.",
+  "type": "object",
+  "required": [
+    "turn",
+    "timestamp",
+    "legs",
+    "summary"
+  ],
+  "properties": {
+    "turn": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string"
+    },
+    "command": {
+      "type": "string",
+      "description": "The exact command run, so the rollup is reproducible by hand."
+    },
+    "legs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "leg",
+          "verdict"
+        ],
+        "properties": {
+          "leg": {
+            "enum": [
+              "test",
+              "lint",
+              "typecheck",
+              "integrity",
+              "red-proof"
+            ]
+          },
+          "verdict": {
+            "enum": [
+              "PASS",
+              "FAIL",
+              "BLOCKED",
+              "SKIP"
+            ]
+          },
+          "command": {
+            "type": "string"
+          },
+          "blockedReason": {
+            "type": "string",
+            "description": "BLOCKED means the command could not run at all - a missing toolchain, a timeout. Nothing was learned about the code, and reporting it as a test failure sends someone to debug working code."
+          },
+          "failing": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "confidence": {
+            "enum": [
+              "exact",
+              "heuristic",
+              "exit-code-only"
+            ],
+            "description": "How the failing test names were obtained. Surfaced rather than hidden: a red proof built on exit-code-only evidence is much weaker than one built on named failures."
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "verdict"
+      ],
+      "properties": {
+        "verdict": {
+          "enum": [
+            "green",
+            "red"
+          ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "failed": {
+          "type": "integer"
+        },
+        "blocked": {
+          "type": "integer"
+        },
+        "new_passing_since_last_turn": {
+          "type": "integer",
+          "description": "Drives the stagnation breaker."
+        }
+      }
+    }
+  }
+}

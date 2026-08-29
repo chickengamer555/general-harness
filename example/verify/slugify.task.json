@@ -1,0 +1,62 @@
+{
+  "task": "slugify",
+  "title": "URL slug generator",
+  "description": "Turn arbitrary text into a URL-safe slug that is never undefined, never contains characters that need escaping in a path, and never has leading, trailing or repeated separators.",
+  "tier": "quick",
+
+  "clauses": [
+    {
+      "id": "A1",
+      "text": "Ordinary text becomes a lowercase, hyphen-separated slug.",
+      "observable_by": "a test named \"handles ordinary input\" passes"
+    },
+    {
+      "id": "A2",
+      "text": "Runs of whitespace, underscores, slashes and hyphens collapse to a single hyphen, with none left at either end.",
+      "observable_by": "a test named \"collapses repeated separators\" passes"
+    },
+    {
+      "id": "A3",
+      "text": "Empty, whitespace-only, null and undefined input all return an empty string - never undefined, and never a thrown error.",
+      "observable_by": "a test named \"handles empty input\" passes",
+      "rationale": "The result goes straight into a URL. \"undefined\" appearing in a path is a bug that surfaces far from its cause."
+    },
+    {
+      "id": "A4",
+      "text": "Accented and non-Latin characters are transliterated or dropped, leaving only [a-z0-9-].",
+      "observable_by": "a test named \"strips unicode punctuation\" passes"
+    }
+  ],
+
+  "units": [
+    {
+      "id": "slugify",
+      "surface": "clean/src/slugify.mjs",
+      "tests": "clean/test/slugify.test.mjs",
+      "cases": [
+        {
+          "id": "handles-ordinary-input",
+          "description": "the normal path - two words become one hyphenated slug",
+          "maps_to_clause": "A1"
+        },
+        {
+          "id": "collapses-repeated-separators",
+          "description": "mixed and repeated separators, plus leading and trailing ones",
+          "maps_to_clause": "A2"
+        },
+        {
+          "id": "handles-empty-input",
+          "description": "empty string, whitespace only, null and undefined - the case that ships broken most often",
+          "probe": true,
+          "maps_to_clause": "A3"
+        },
+        {
+          "id": "strips-unicode-punctuation",
+          "description": "accents, CJK characters, em dashes and quotes - hostile input for anything doing naive string work",
+          "probe": true,
+          "maps_to_clause": "A4"
+        }
+      ]
+    }
+  ]
+}

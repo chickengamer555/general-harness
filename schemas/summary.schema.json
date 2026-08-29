@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "summary (run closure)",
+  "description": "Written once when a run ends, however it ends. An honest abort recorded here is worth more than a success that was really a turn-cap in disguise.",
+  "type": "object",
+  "required": ["run_id", "status", "termination_reason", "turn_count"],
+  "properties": {
+    "run_id": { "type": "string" },
+    "feature": { "type": "string" },
+    "units": { "type": "array", "items": { "type": "string" } },
+    "status": { "enum": ["success", "aborted"] },
+    "termination_reason": {
+      "enum": ["mutual_pass", "blocked", "livelock", "stagnation", "turn_cap"],
+      "description": "mutual_pass is the only success. The other four are honest aborts and must be reported as such, never dressed up."
+    },
+    "turn_count": { "type": "integer" },
+    "stances_used": { "type": "array", "items": { "type": "string" } },
+    "contract_hashes": {
+      "type": "object",
+      "description": "unit id -> canonical hash at lock time. Later stages re-check this before trusting a contract.",
+      "additionalProperties": { "type": "string" }
+    },
+    "final_matrix_verdict": { "enum": ["green", "red"] },
+    "residual_gaps": { "type": "array", "items": { "type": "string" } },
+    "highest_impact_change": { "type": "string" }
+  }
+}

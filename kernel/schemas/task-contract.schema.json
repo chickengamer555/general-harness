@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/chickengamer555/general-harness/kernel/schemas/task-contract.schema.json",
+  "title": "general-verify task contract",
+  "description": "The shortest possible statement of what must become true, written BEFORE the code, in a form a machine can check afterwards. Not a design document and not a ticket. Everything in this file is inside the canonical hash.",
+  "type": "object",
+  "required": ["task", "title", "description", "clauses", "units"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+
+    "task": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "Unique task id. Red proofs, run directories and trace lines all key off this."
+    },
+    "title": { "type": "string", "minLength": 1 },
+    "description": {
+      "type": "string",
+      "minLength": 10,
+      "description": "What must become true, in language the person who asked for it would recognise."
+    },
+    "tier": {
+      "enum": ["quick", "standard", "full"],
+      "default": "quick",
+      "description": "How much ceremony this task warrants. quick = one person, no subagents. standard = builder + critic. full = proposer + qa first. Matching the tier to the stakes is the first real decision."
+    },
+
+    "clauses": {
+      "type": "array",
+      "minItems": 1,
+      "description": "One requirement each. Every clause must have a case mapped to it, or it is agreed but unproven.",
+      "items": {
+        "type": "object",
+        "required": ["id", "text", "observable_by"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[A-Z][0-9]+$" },
+          "text": {
+            "type": "string",
+            "minLength": 5,
+            "description": "One requirement. A clause with 'and' in it usually wants to be two, and will otherwise be half-delivered and still marked green."
+          },
+          "observable_by": {
+            "type": "string",
+            "description": "How a machine could tell this clause was met. If you cannot answer, it is a wish rather than a requirement: sharpen it until you can, or move it to open_questions."
+          },
+          "rationale": { "type": "string" },
+          "open_flag": { "type": "string", "description": "An unresolved objection carried forward visibly rather than silently dropped." }
+        }
+      }
+    },
+
+    "units": {
+      "type": "array",
+      "minItems": 1,
+      "description": "The pieces of work this task splits into. Each needs at least one probe case.",
+      "items": {
+        "type": "object",
+        "required": ["id", "cases"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "surface": { "type": "string", "description": "The file or module this unit lives in." },
+          "tests": { "type": "string", "description": "Where its tests live." },
+          "cases": {
+            "type": "array",
+            "minItems": 1,
+            "description": "The behaviours that must be tested. Each becomes a test, and each must be observed failing before it passes.",
+            "items": {
+              "type": "object",
+              "required": ["id", "description"],
+              "additionalProperties": false,
+              "properties": {
+                "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+                "description": { "type": "string", "minLength": 1 },
+                "probe": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "An off-happy-path case: the empty input, the boundary, the hostile value, the failure path. At least one per unit - a unit with none has only tested the demo."
+                },
+                "maps_to_clause": { "type": "string" },
+                "test_name": {
+                  "type": "string",
+                  "description": "Pin the mapping to a specific test name. Only needed when the test name differs enough from the case id that matching by normalised containment would miss it."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "gate": {
+      "type": "object",
+      "description": "Override the resolved gate for this task specifically. Rarely needed - the project-level config is the usual place.",
+      "properties": {
+        "test": { "type": "string" },
+        "lint": { "type": "string" },
+        "typecheck": { "type": "string" }
+      }
+    },
+
+    "non_goals": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Explicitly out of scope. Writing these down is what stops scope drift from being discovered at review time."
+    },
+    "open_questions": { "type": "array", "items": { "type": "string" } },
+    "notes": { "type": "string" },
+    "canonicalHash": { "type": "string" },
+    "lockedAt": { "type": "string" }
+  }
+}

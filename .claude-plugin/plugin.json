@@ -1,0 +1,11 @@
+{
+  "name": "general-verify",
+  "version": "1.0.0",
+  "description": "Stack-agnostic harness: agree a task contract first, prove each test was red before it was green, run the project's own test gate, and add the integrity checks a test suite structurally cannot run on itself. Scales from a five-minute fix to a full adversarial builder/critic loop.",
+  "author": { "name": "chickengamer555" },
+  "homepage": "https://github.com/chickengamer555/general-harness",
+  "keywords": ["tdd", "verification", "contracts", "testing", "quality", "agents", "polyglot"],
+  "commands": "./commands",
+  "agents": "./agents",
+  "skills": "./skills"
+}
