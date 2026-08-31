@@ -1,5 +1,7 @@
 # general-harness
 
+[![check](https://github.com/chickengamer555/general-harness/actions/workflows/ci.yml/badge.svg)](https://github.com/chickengamer555/general-harness/actions/workflows/ci.yml)
+
 **Harness quality without a house style.** For any language, at any size.
 Invoke it with `/general-harness`.
 
@@ -159,6 +161,9 @@ Two escape hatches, both deliberately visible:
 ```sh
 npm run check    # selftest + self-verification + the example, all with red proofs enforced
 ```
+
+CI runs exactly this command on Linux and Windows. The badge at the top is that
+run: if it is green, the harness passed its own gate on a machine that is not mine.
 
 `general-verify` runs against its own kernel: a contract in `verify/`, real red
 proofs committed in `.general-harness/`, and the integrity leg pointed at its own
