@@ -14,7 +14,10 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        node: [20, 22, 24]
+        # Node 20 is EOL (April 2026) and its --test does not accept glob
+        # patterns, so `npm test` cannot run there. CI is what disproved the
+        # engines: >=20 claim that used to sit in package.json.
+        node: [22, 24]
 
     steps:
       - uses: actions/checkout@v4

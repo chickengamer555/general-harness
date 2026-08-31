@@ -171,11 +171,12 @@ source. It also verifies
 [`web-harness`](https://github.com/chickengamer555/web-harness), whose kernel is
 plain JavaScript that `web-verify` cannot grade.
 
-That exercise produced **21 clauses across three contracts — 19 real defects and
-2 capabilities the exercise showed were missing — with 25 recorded red proofs
-and 5 declared guards.** Every defect was observed failing before it was fixed.
+That exercise produced **22 clauses across three contracts — 20 real defects and
+2 capabilities the exercise showed were missing — with 27 recorded red proofs
+and 7 declared guards.** Every defect was observed failing before it was fixed.
+The split is 14 defects in this kernel and 6 in `web-harness`.
 
-The two worst were both in this kernel:
+The three worst were all in this kernel:
 
 - the gate inherited `NODE_TEST_CONTEXT` from whatever process invoked it, so
   running it from inside a test runner made a **failing suite report success** —
@@ -183,6 +184,11 @@ The two worst were both in this kernel:
 - a test failing because the implementation did not exist yet was classified
   `BLOCKED` rather than `FAIL`, so `general-verify red` refused to record it —
   breaking the first step of test-first development, which is the whole method.
+- every "command not found" pattern had been written against Windows and bash,
+  so on Linux — where `/bin/sh` is dash, which prints `/bin/sh: 1: x: not found`
+  and exits 127 — **a missing toolchain was reported as a failing test suite**,
+  sending someone to debug working code. The first CI run found it in under a
+  minute; it had been invisible for as long as the only machine was mine.
 
 Neither was findable by reading the code. Both fell out of pointing the harness
 at itself.

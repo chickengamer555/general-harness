@@ -19,8 +19,9 @@ it adds is the part that makes "done" mean something:
 4. **Integrity checks** — the three ways a suite goes green while proving
    nothing, which the suite structurally cannot detect in itself.
 
-**Kernel on this machine:** `C:\Users\Lido\Documents\general-harness`
-(`node <kernel>/kernel/bin/general-verify.mjs`). Source of truth:
+**Kernel:** `<kernel>` (`install-skill.ps1` bakes the real clone path into your
+installed copy of this skill, so every command below runs as written). Source of
+truth:
 `https://github.com/chickengamer555/general-harness`. Its web-specific sibling
 is `web-harness` (`/web-harness`).
 

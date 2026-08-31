@@ -1,7 +1,6 @@
 {
   "name": "general-harness",
   "version": "1.0.0",
-  "private": true,
   "type": "module",
   "description": "A stack-agnostic harness: contract first, red proof, the project's own test gate, and integrity checks a test suite cannot run on itself.",
   "bin": {
@@ -15,7 +14,11 @@
     "test": "node --test \"test/*.test.mjs\""
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chickengamer555/general-harness.git"
+  }
 }
