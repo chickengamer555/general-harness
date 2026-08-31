@@ -198,6 +198,28 @@
       "contract_hash": "a5933f0d9b852d00f66911985d3f4ef6670a2c0d96d4e659b90c16e409e2d154",
       "gate_command": "node --test \"test/*.test.mjs\"",
       "confidence": "exact"
+    },
+    {
+      "task": "kernel-integrity",
+      "unit": "gate",
+      "case": "missing-toolchain-dash",
+      "key": "gate/missing-toolchain-dash",
+      "matched_test": "classifies a dash-style missing command as a missing toolchain",
+      "failed_at": "2026-08-31T07:30:16.833Z",
+      "contract_hash": "34f5aa52f8bfc88cfe230af7f30eae5f06fa116663b282bf0115c64f91bd2502",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "kernel-integrity",
+      "unit": "gate",
+      "case": "missing-toolchain-exit-127",
+      "key": "gate/missing-toolchain-exit-127",
+      "matched_test": "treats exit 127 as a missing toolchain whatever the shell printed",
+      "failed_at": "2026-08-31T07:30:16.833Z",
+      "contract_hash": "34f5aa52f8bfc88cfe230af7f30eae5f06fa116663b282bf0115c64f91bd2502",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
     }
   ]
 }

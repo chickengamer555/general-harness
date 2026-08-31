@@ -51,6 +51,12 @@
       "text": "A test-support module must not be analysed as though it were a test file.",
       "observable_by": "a helpers module in the test directory that builds test source as strings produces no assertion-free findings",
       "rationale": "Found while fixing A6. Helper, fixture and factory modules live in test directories and routinely contain test source as string literals - exactly the shape that fools a text-based analysis. A false positive here is worse than a miss: the first thing anyone does with a check that cries wolf is switch it off, after which it catches nothing at all."
+    },
+    {
+      "id": "A9",
+      "text": "A toolchain that could not launch must be classified BLOCKED on every platform, not only on the one the kernel happens to be developed on.",
+      "observable_by": "the classifier returns true for a dash-style 'not found' message and for exit code 127 - both of which a Linux shell produces and a Windows shell never does",
+      "rationale": "Every missing-command pattern had been written against Windows and bash prose. spawnSync runs commands through /bin/sh, which on Ubuntu is dash: it prints '/bin/sh: 1: x: not found' and exits 127, matching none of them. So on every Linux machine - which is to say on CI, and on most machines that are not mine - a missing toolchain was reported as a failing test suite, sending someone to debug working code. This is the exact BLOCKED/FAIL confusion clause A2 exists to prevent, reintroduced through a platform nobody had run."
     }
   ],
   "units": [
@@ -96,6 +102,35 @@
           "description": "go and cargo failing test names are extracted",
           "maps_to_clause": "A4",
           "test_name": "gate extracts go and cargo failing test names"
+        },
+        {
+          "id": "missing-toolchain-dash",
+          "description": "a dash-style '/bin/sh: 1: x: not found' is recognised as a toolchain that never launched",
+          "probe": true,
+          "maps_to_clause": "A9",
+          "test_name": "classifies a dash-style missing command as a missing toolchain"
+        },
+        {
+          "id": "missing-toolchain-exit-127",
+          "description": "the POSIX 'command not found' exit code is sufficient on its own, whatever the shell printed",
+          "probe": true,
+          "maps_to_clause": "A9",
+          "test_name": "treats exit 127 as a missing toolchain whatever the shell printed"
+        },
+        {
+          "id": "missing-toolchain-bash",
+          "description": "the bash-style message keeps being recognised - this already held and must keep holding",
+          "guard": true,
+          "maps_to_clause": "A9",
+          "test_name": "classifies a bash-style missing command as a missing toolchain"
+        },
+        {
+          "id": "failing-suite-stays-fail",
+          "description": "a suite that ran and failed is never reclassified as a missing toolchain",
+          "guard": true,
+          "probe": true,
+          "maps_to_clause": "A9",
+          "test_name": "does not mistake a suite that ran and failed for a missing toolchain"
         }
       ]
     },

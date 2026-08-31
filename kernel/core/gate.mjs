@@ -288,15 +288,21 @@ export function runTests(command, cwd, runner) {
  * step of test-first development could never be proven. A missing module in the
  * code under test is a genuine, recordable FAIL.
  */
-function looksLikeMissingToolchain(out, code) {
+export function looksLikeMissingToolchain(out, code) {
   if (code === 0) return false;
+  // 127 is the POSIX exit code for "could not find the command" and 126 for
+  // "found it, could not execute it". Both are the shell reporting that it never
+  // launched anything, so nothing was learned about the code. Read the code
+  // rather than the message: the message is shell-specific, and dash - the
+  // /bin/sh on most Linux CI images - omits the word "command" entirely.
+  if (code === 127 || code === 126) return true;
   return [
     /command not found/i,
     /is not recognized as an internal or external command/i,
     /No module named (pytest|mypy|ruff|bandit|pip_audit|unittest|nose)/i,
     /could not determine executable to run/i,
     /npm ERR!\s*Missing script/i,
-    /^\s*sh: .*: not found\s*$/im,
+    /^\s*\S*sh: (?:\d+: )?.*: not found\s*$/im,
     /No such file or directory\s*$/im,
   ].some((re) => re.test(out));
 }

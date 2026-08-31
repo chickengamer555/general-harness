@@ -6,7 +6,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { runTests, runAux, excerpt } from '../kernel/core/gate.mjs';
+import { runTests, runAux, excerpt, looksLikeMissingToolchain } from '../kernel/core/gate.mjs';
 import { VERDICT, CONFIDENCE } from '../kernel/core/types.mjs';
 import { tempProject } from './helpers.mjs';
 
@@ -47,6 +47,34 @@ test('gate reports a genuinely absent toolchain as BLOCKED', () => {
     const r = runTests('definitely-not-a-real-runner-9f3a --version', p.root, null);
     assert.equal(r.verdict, VERDICT.BLOCKED);
   } finally { p.cleanup(); }
+});
+
+// "command not found" wears a different message in every shell, and the one that
+// matters is the one this project is never developed on. spawnSync runs commands
+// through /bin/sh, which on Ubuntu - and so on CI - is dash, and dash says
+// "/bin/sh: 1: x: not found", with no "command" in it at all. Matching on prose
+// alone made a missing toolchain read as a failing suite on every Linux machine:
+// the exact BLOCKED/FAIL confusion this gate exists to prevent.
+
+test('classifies a dash-style missing command as a missing toolchain', () => {
+  assert.equal(looksLikeMissingToolchain('/bin/sh: 1: pytest: not found', 127), true);
+});
+
+test('classifies a bash-style missing command as a missing toolchain', () => {
+  assert.equal(looksLikeMissingToolchain('bash: line 1: pytest: command not found', 127), true);
+});
+
+test('treats exit 127 as a missing toolchain whatever the shell printed', () => {
+  // 127 is the POSIX code for "could not find the command"; a runner that got as
+  // far as running tests does not exit with it. Reading the code is more durable
+  // than reading a message that changes with the shell.
+  assert.equal(looksLikeMissingToolchain('', 127), true);
+});
+
+test('does not mistake a suite that ran and failed for a missing toolchain', () => {
+  assert.equal(
+    looksLikeMissingToolchain("Cannot find module - 1 failing, AssertionError", 1), false,
+    'the classic TDD red state must stay recordable as FAIL');
 });
 
 /* --------------------------- passing runs --------------------------------- */
