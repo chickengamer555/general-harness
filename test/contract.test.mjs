@@ -90,6 +90,17 @@ test('an unknown tier is rejected', () => {
   assert.ok(errorsFor((c) => { c.tier = 'enormous'; }).some((e) => /tier/.test(e)));
 });
 
+test('a reported case needs the users words', () => {
+  assert.ok(errorsFor((c) => { c.units[0].cases[0].reported = ' '; }).some((e) => /reported/.test(e)),
+    'the user\'s words are what the reproduction is checked against');
+});
+
+test('a reported case cannot be a guard', () => {
+  const errs = errorsFor((c) => { Object.assign(c.units[0].cases[0], { reported: 'it crashes', guard: true }); });
+  assert.ok(errs.some((e) => /reported/.test(e) && /guard/.test(e)),
+    'a guard needs no red proof, which is exactly what a reported bug must have');
+});
+
 /* ------------------------------- loading ---------------------------------- */
 
 test('loadContract reports invalid JSON as an error rather than throwing', () => {

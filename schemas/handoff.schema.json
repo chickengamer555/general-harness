@@ -76,7 +76,7 @@
 
     "builder_self_verdict": {
       "enum": ["pass", "more_work"],
-      "description": "pass only when the Builder believes the contract is fully met. Termination needs this AND two consecutive Critic passes."
+      "description": "pass only when the Builder believes the contract is fully met. Termination needs this AND two consecutive Critic passes AND the orchestrator's matrix GREEN on the same turn."
     }
   }
 }

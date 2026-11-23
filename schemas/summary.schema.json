@@ -11,7 +11,7 @@
     "status": { "enum": ["success", "aborted"] },
     "termination_reason": {
       "enum": ["mutual_pass", "blocked", "livelock", "stagnation", "turn_cap"],
-      "description": "mutual_pass is the only success. The other four are honest aborts and must be reported as such, never dressed up."
+      "description": "mutual_pass is the only success, and needs the matrix GREEN on the latest turn as well as the Critic and Builder passes. The other four are honest aborts and must be reported as such, never dressed up."
     },
     "turn_count": { "type": "integer" },
     "stances_used": { "type": "array", "items": { "type": "string" } },

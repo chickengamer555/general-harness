@@ -88,7 +88,7 @@ function printReport(report, { verbose }) {
     }
 
     if (l.leg === 'red-proof') {
-      const note = l.required ? '' : C.d + '  (advisory - pass --require-red-proof to enforce)' + C.x;
+      const note = l.required ? '' : C.d + '  (advisory except for reported bugs - pass --require-red-proof to enforce)' + C.x;
       console.log('  ' + pad('red-proof', 14) + (MARK[l.verdict] ?? l.verdict) + note);
       for (const p of l.proofs) {
         const bits = [];
@@ -100,7 +100,8 @@ function printReport(report, { verbose }) {
         if (p.guards?.length) bits.push(C.d + p.guards.length + ' guard' + C.x);
         console.log('      ' + pad(p.task, 22) + bits.join(', '));
         for (const m of p.missing.slice(0, 6)) {
-          console.log('        ' + C.r + '?' + C.x + ' ' + m.key + C.d + ' - ' + m.description + C.x);
+          console.log('        ' + C.r + '?' + C.x + ' ' + m.key + C.d + ' - ' +
+            (m.reported ? 'reported: "' + m.reported + '"' : m.description) + C.x);
         }
       }
       continue;

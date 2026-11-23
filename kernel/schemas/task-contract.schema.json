@@ -131,6 +131,11 @@
                   "type": "string",
                   "description": "Pin the mapping to a specific test name. Only needed when the test name differs enough from the case id that matching by normalised containment would miss it."
                 },
+                "reported": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The user's own words for a bug they reported. The case reproduces that symptom, and needs a red proof in every tier, with or without --require-red-proof. Cannot be combined with guard."
+                },
                 "guard": {
                   "type": "boolean",
                   "default": false,

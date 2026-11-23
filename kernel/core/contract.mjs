@@ -86,6 +86,13 @@ export function validateContract(c, where = '<contract>') {
         if (caseIds.has(cs.id)) at('duplicate case id "' + cs.id + '" in unit "' + u.id + '"');
         caseIds.add(cs.id);
         if (!cs.description) at('case "' + u.id + '/' + cs.id + '" has no description');
+        if ('reported' in cs) {
+          if (typeof cs.reported !== 'string' || !cs.reported.trim()) {
+            at('case "' + u.id + '/' + cs.id + '" has an empty "reported" - put the user\'s own words for the symptom there');
+          } else if (cs.guard) {
+            at('case "' + u.id + '/' + cs.id + '" is both "reported" and a "guard" - a reported bug was red by definition, and its red proof is the evidence the fix is real');
+          }
+        }
         if (cs.maps_to_clause) {
           if (!clauseIds.has(cs.maps_to_clause)) {
             at('case "' + u.id + '/' + cs.id + '" maps to unknown clause "' + cs.maps_to_clause + '"');

@@ -264,6 +264,72 @@
       "contract_hash": "48bc085b2e5978a13dc7a03835ef83e35aa18fc437ffa3eab3fc25ddfefedfcc",
       "gate_command": "node --test \"test/*.test.mjs\"",
       "confidence": "exact"
+    },
+    {
+      "task": "reported-bugs",
+      "unit": "matrix",
+      "case": "reported-case-needs-red-proof",
+      "key": "matrix/reported-case-needs-red-proof",
+      "matched_test": "a reported case needs red proof even in a quick run",
+      "failed_at": "2026-11-23T02:40:41.261Z",
+      "contract_hash": "06bee1e617f4a6e10680c3a9d9f02f2c1d2ec23d206ed36cd99fb2553c0e20c5",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "reported-bugs",
+      "unit": "contract",
+      "case": "reported-case-needs-the-users-words",
+      "key": "contract/reported-case-needs-the-users-words",
+      "matched_test": "a reported case needs the users words",
+      "failed_at": "2026-11-23T02:40:41.261Z",
+      "contract_hash": "06bee1e617f4a6e10680c3a9d9f02f2c1d2ec23d206ed36cd99fb2553c0e20c5",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "reported-bugs",
+      "unit": "contract",
+      "case": "reported-case-cannot-be-a-guard",
+      "key": "contract/reported-case-cannot-be-a-guard",
+      "matched_test": "a reported case cannot be a guard",
+      "failed_at": "2026-11-23T02:40:41.261Z",
+      "contract_hash": "06bee1e617f4a6e10680c3a9d9f02f2c1d2ec23d206ed36cd99fb2553c0e20c5",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "installer",
+      "unit": "install",
+      "case": "installer-bakes-the-clone-path",
+      "key": "install/installer-bakes-the-clone-path",
+      "matched_test": "the installer bakes the clone path into the installed skill",
+      "failed_at": "2026-11-23T02:43:09.291Z",
+      "contract_hash": "fe30f80801bd0b2af1bce240607bf8f7eba9aa2ed648eb863076d26cea2d741f",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "installer",
+      "unit": "install",
+      "case": "installer-stamps-the-source-commit",
+      "key": "install/installer-stamps-the-source-commit",
+      "matched_test": "the installer stamps the source commit",
+      "failed_at": "2026-11-23T02:43:09.291Z",
+      "contract_hash": "fe30f80801bd0b2af1bce240607bf8f7eba9aa2ed648eb863076d26cea2d741f",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "installer",
+      "unit": "install",
+      "case": "stale-install-is-replaced",
+      "key": "install/stale-install-is-replaced",
+      "matched_test": "a stale install is replaced, not merged",
+      "failed_at": "2026-11-23T02:43:09.291Z",
+      "contract_hash": "fe30f80801bd0b2af1bce240607bf8f7eba9aa2ed648eb863076d26cea2d741f",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
     }
   ]
 }

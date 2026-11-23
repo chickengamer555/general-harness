@@ -39,7 +39,7 @@ For turn N = 1, 2, …:
 
 ## Termination checks — evaluate in this order, first to fire wins
 
-- **Mutual pass -> SUCCESS.** Two consecutive Critic `pass` verdicts *and* the Builder's `pass` self-verdict on the latest turn.
+- **Oracle green + mutual pass -> SUCCESS.** The matrix from step 2 is GREEN on the latest turn, *and* two consecutive Critic `pass` verdicts, *and* the Builder's `pass` self-verdict on that turn. Critic passes alone never end the run: a `pass` against a red or BLOCKED matrix is a failed stance, so keep looping.
 - **Block.** Critic returns `block` and the next Builder turn cannot resolve it -> abort, `blocked`.
 - **Livelock.** `handoff_t<N>` is byte-identical to `handoff_t<N-1>` -> abort, `livelock`.
 - **Stagnation.** No newly passing case across the last 4 turns. First occurrence: inject the Critic's `highest_impact_change` verbatim into the next Builder dispatch. Second: abort, `stagnation`.

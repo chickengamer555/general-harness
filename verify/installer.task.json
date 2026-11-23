@@ -1,0 +1,24 @@
+{
+  "$schema": "../kernel/schemas/task-contract.schema.json",
+  "task": "installer",
+  "title": "A portable installer for the global skill",
+  "description": "install.mjs does what install-skill.ps1 does, on any OS with Node: copy the skill into ~/.claude/skills with the real clone path baked in, and stamp which commit it came from.",
+  "tier": "quick",
+  "clauses": [
+    { "id": "I1", "text": "The installed SKILL.md names this clone's kernel path instead of <kernel>, and keeps its frontmatter first.", "observable_by": "the installed file starts with --- and contains the clone path and no <kernel>" },
+    { "id": "I2", "text": "The installed copy records the git commit it was installed from.", "observable_by": "an installed-by comment carrying a 40-character sha" },
+    { "id": "I3", "text": "Re-installing replaces the previous copy rather than merging into it.", "observable_by": "a file left in the old install is gone afterwards" }
+  ],
+  "units": [
+    {
+      "id": "install",
+      "surface": "install.mjs",
+      "tests": "test/install.test.mjs",
+      "cases": [
+        { "id": "installer-bakes-the-clone-path", "description": "fresh install into an empty home", "maps_to_clause": "I1" },
+        { "id": "installer-stamps-the-source-commit", "description": "the sha stamp", "maps_to_clause": "I2" },
+        { "id": "stale-install-is-replaced", "description": "an old install with a file removed upstream", "probe": true, "maps_to_clause": "I3" }
+      ]
+    }
+  ]
+}

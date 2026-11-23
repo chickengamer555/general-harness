@@ -1,0 +1,44 @@
+{
+  "$schema": "../kernel/schemas/task-contract.schema.json",
+  "task": "reported-bugs",
+  "title": "A bug the user reported always needs a red proof",
+  "description": "A case marked \"reported\" reproduces a symptom the user described, in their words. It must be seen failing before the fix in every tier, because a fix for a reported bug with no reproduction is a guess that the user is then asked to trust.",
+  "tier": "quick",
+  "clauses": [
+    {
+      "id": "R1",
+      "text": "A reported case with no red proof fails the run even when --require-red-proof was not passed.",
+      "observable_by": "runMatrix without requireRedProof returns a FAIL red-proof leg whose breaker names the reported case"
+    },
+    {
+      "id": "R2",
+      "text": "Cases that are not reported stay advisory when --require-red-proof was not passed.",
+      "observable_by": "runMatrix without requireRedProof returns a PASS red-proof leg for an unproven ordinary case"
+    },
+    {
+      "id": "R3",
+      "text": "A reported case must carry the user's words and cannot be a guard.",
+      "observable_by": "validateContract rejects an empty \"reported\" and a reported case marked \"guard\""
+    }
+  ],
+  "units": [
+    {
+      "id": "matrix",
+      "surface": "kernel/matrix.mjs",
+      "tests": "test/matrix.test.mjs",
+      "cases": [
+        { "id": "reported-case-needs-red-proof", "description": "quick run, reported case, no proof recorded", "probe": true, "maps_to_clause": "R1" },
+        { "id": "unreported-case-stays-advisory", "description": "quick run, ordinary case, no proof recorded", "maps_to_clause": "R2", "guard": true }
+      ]
+    },
+    {
+      "id": "contract",
+      "surface": "kernel/core/contract.mjs",
+      "tests": "test/contract.test.mjs",
+      "cases": [
+        { "id": "reported-case-needs-the-users-words", "description": "\"reported\": \"\" is rejected", "probe": true, "maps_to_clause": "R3" },
+        { "id": "reported-case-cannot-be-a-guard", "description": "reported plus guard is rejected", "probe": true, "maps_to_clause": "R3" }
+      ]
+    }
+  ]
+}

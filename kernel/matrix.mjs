@@ -126,11 +126,10 @@ export async function runMatrix({ dir = '.', task = null, requireRedProof = fals
     const rp = checkRedProof(root, { task: u.contract.task, contractHash: u.hash, cases });
     redProofs.push({ task: u.contract.task, ...rp });
   }
-  const anyMissing = redProofs.some((r) => r.missing.length > 0);
   if (units.length) {
     legs.push({
       leg: 'red-proof',
-      verdict: requireRedProof && anyMissing ? VERDICT.FAIL : VERDICT.PASS,
+      verdict: unproven(redProofs, requireRedProof).length ? VERDICT.FAIL : VERDICT.PASS,
       required: requireRedProof,
       proofs: redProofs,
     });
@@ -163,6 +162,15 @@ export async function runMatrix({ dir = '.', task = null, requireRedProof = fals
   };
 }
 
+/**
+ * The missing proofs that break the run. A case the user reported always
+ * counts, in every tier: a fix for a bug nobody reproduced is a guess.
+ */
+function unproven(redProofs, requireRedProof) {
+  return redProofs.flatMap((r) =>
+    r.missing.filter((m) => requireRedProof || m.reported).map((m) => r.task + '/' + m.key));
+}
+
 export function rollup({ legs, contractErrors, units, requireRedProof, redProofs }) {
   const breakers = [];
 
@@ -172,7 +180,7 @@ export function rollup({ legs, contractErrors, units, requireRedProof, redProofs
         const first = l.checks.find((c) => c.status === 'fail');
         breakers.push('integrity: ' + first.label + (first.detail ? ' - ' + first.detail : ''));
       } else if (l.leg === 'red-proof') {
-        const miss = redProofs.flatMap((r) => r.missing.map((m) => r.task + '/' + m.key));
+        const miss = unproven(redProofs, requireRedProof);
         breakers.push(
           'red-proof: ' + miss.length + ' case(s) never observed failing before they passed (' +
           miss.slice(0, 4).join(', ') + ') - a test that was never red has not been shown to be wired to anything'

@@ -19,9 +19,27 @@ it adds is the part that makes "done" mean something:
 4. **Integrity checks** — the three ways a suite goes green while proving
    nothing, which the suite structurally cannot detect in itself.
 
-**Kernel:** `<kernel>` (`install-skill.ps1` bakes the real clone path into your
-installed copy of this skill, so every command below runs as written). Source of
-truth:
+## A reported bug is reproduced before it is fixed
+
+When the user reports a bug, the first thing you build is the failure, not the
+fix:
+
+1. Add a case with `"reported": "<the user's own words>"` and a test that shows
+   that symptom.
+2. Run `red --task <task>` and show the user the red output.
+3. Fix it, run the matrix, show the same case green.
+
+The matrix fails any reported case with no red proof, in every tier, with or
+without `--require-red-proof`.
+
+**Never say "fixed" without that red→green pair.** If the symptom cannot be
+reproduced in a test (hardware only, timing, how it feels), say so plainly,
+state what you checked instead and how (a manual run, the real device, logs),
+and do not call it green.
+
+**Kernel:** `<kernel>` (`install.mjs`, or `install-skill.ps1` on Windows, bakes
+the real clone path into your installed copy of this skill, so every command
+below runs as written). Source of truth:
 `https://github.com/chickengamer555/general-harness`. Its web-specific sibling
 is `web-harness` (`/web-harness`).
 

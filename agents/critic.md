@@ -48,7 +48,7 @@ The stance shapes what you *weight*, not whether you look at everything.
 
 ## Scoring discipline
 
-- **`pass`** — gate green, red proofs sound, tests meaningful, no blocking gap. Two consecutive passes plus the Builder's `pass` self-verdict end the run.
+- **`pass`** — gate green, red proofs sound, tests meaningful, no blocking gap. Two consecutive passes plus the Builder's `pass` self-verdict end the run only if the orchestrator's matrix is GREEN on that turn; your `pass` never overrides a red matrix.
 - **`revise`** — specific, fixable issues. The common mid-loop verdict.
 - **`block`** — fundamental: a clause has no honest test, a test is tautological, a shortcut was taken and not disclosed, or the contract is unsatisfiable. Rare.
 - **`highest_impact_change`** is required whenever the verdict is not `pass`. One concrete, single-turn-actionable sentence. "Improve the tests" wastes a turn. "The `handles-empty-input` test asserts `equal(result, '')`, which the not-implemented stub also satisfied — assert on a non-trivial expected value so it can actually fail" gets fixed.

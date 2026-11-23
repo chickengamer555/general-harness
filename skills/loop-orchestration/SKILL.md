@@ -58,8 +58,11 @@ implementation is the exact failure this whole system exists to prevent.
 
 ## Termination breakers — evaluate in order, first to fire wins
 
-- **Mutual pass — SUCCESS.** Two consecutive Critic `pass` verdicts *and* the
-  Builder's `pass` self-verdict on the latest turn.
+- **Oracle green + mutual pass — SUCCESS.** The matrix you ran on the latest
+  turn (`general-verify --require-red-proof`) is GREEN, *and* two consecutive Critic `pass` verdicts, *and*
+  the Builder's `pass` self-verdict on that turn. Critic passes alone are never
+  success: they are two agents agreeing, and the matrix is the only oracle. A
+  Critic `pass` against a red or BLOCKED matrix is a failed stance, not a stop.
 - **Block.** The Critic returns `block` and the next Builder turn cannot resolve it.
 - **Livelock.** `handoff_t<N>` is byte-identical to `handoff_t<N-1>` — the loop
   is turning without moving.
