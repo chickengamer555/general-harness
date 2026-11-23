@@ -10,8 +10,8 @@
     "units": { "type": "array", "items": { "type": "string" } },
     "status": { "enum": ["success", "aborted"] },
     "termination_reason": {
-      "enum": ["mutual_pass", "blocked", "livelock", "stagnation", "turn_cap"],
-      "description": "mutual_pass is the only success, and needs the matrix GREEN on the latest turn as well as the Critic and Builder passes. The other four are honest aborts and must be reported as such, never dressed up."
+      "enum": ["mutual_pass", "blocked", "livelock", "stagnation", "turn_cap", "disputed"],
+      "description": "mutual_pass is the only success, and needs the matrix GREEN on the latest turn as well as the Critic and Builder passes. The other five are honest aborts and must be reported as such, never dressed up. disputed means the Builder raised a dispute: the run stops and the human chooses whether to fix the code, the clause, or the check."
     },
     "turn_count": { "type": "integer" },
     "stances_used": { "type": "array", "items": { "type": "string" } },

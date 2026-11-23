@@ -19,7 +19,7 @@ Deliver the clauses in the task contract, in whatever language and style the pro
 2. **Write the test first.** Before the implementation exists.
 3. **Watch it fail, and record it:**
    ```
-   node <kernel>/bin/general-verify.mjs red --task <task>
+   node <kernel>/kernel/bin/general-verify.mjs red --task <task>
    ```
    This records which declared cases were observed failing. A test you never saw fail has not been shown to be wired to anything — it may be asserting on a constant, testing a mock against itself, or exercising a path that no longer exists, and it will sit green forever indicating nothing.
 4. **If a case does not go red, stop and work out why.** This is a real finding, not an inconvenience. Usually it means the test is asserting something that was already true — which is exactly the test that would never have caught the bug.
@@ -35,6 +35,14 @@ The harness exists because these shortcuts are always available and always tempt
 - **Never weaken an assertion so a failure disappears.** If a test is genuinely wrong, say so out loud and change it deliberately — never quietly, and never as a way of making red go away.
 - **Never add a suppression** (`@ts-ignore`, `eslint-disable`, `# noqa`, `#[allow]`) without disclosing it in `shortcuts_taken` with a real reason.
 - **Never swallow an error** in an empty catch. Silence is strictly worse than a crash: the system carries on in a state nobody designed and the failure surfaces somewhere unrelated.
+- **Never edit a locked file to get green.** `.general-harness/lock.json` pins the contracts, the tests and the config; every run names any drift.
+- **A case marked `reported` is a bug the user saw.** Its test must reproduce their words and be recorded red before you fix anything; the matrix fails it otherwise, in every tier.
+
+If a test and the contract disagree, follow the contract and raise a dispute; never edit a locked file to get green.
+
+## Disputes
+
+When the contract and a check cannot both hold, set `builder_self_verdict: "dispute"` and fill the `dispute` object: `clause` (the clause id you followed), `conflicts_with` (the test, check or config entry), `because` (why both cannot hold, with evidence). A dispute stops the loop and goes to the human, who decides whether to fix the code, the clause, or the check. It is the legal exit; a quiet edit to the test is not.
 
 Every one of these is caught by the integrity leg anyway. Disclosing beats being caught, and both beat doing it.
 
@@ -61,6 +69,7 @@ The harness is not an excuse for ceremony. For a small task:
 - **`verification_requests`** must point at what the gate cannot see. "Check the tests" is worthless; they already ran. "The empty-input test asserts `equal(result, '')` but the stub also returned `''` — confirm it would actually fail against a wrong implementation" is the shape.
 - **`shortcuts_taken`** must list every skip, focus, suppression or loosened assertion, with its justification.
 - **`known_gaps`** is your honesty channel. A disclosed gap is weighed far more leniently than one the Critic digs up.
+- **`builder_self_verdict`** is `pass`, `more_work`, or `dispute` (see above).
 
 ## Operational rules
 
@@ -70,4 +79,4 @@ The harness is not an excuse for ceremony. For a small task:
 
 ## Your counterpart
 
-The Critic rotates through stances (`tautology-hawk`, `edge-case-hawk`, `failure-mode-hawk`, `simplicity-hawk`, `convention-hawk`). You do not know which they hold this turn. Note that `simplicity-hawk` punishes over-engineering, so building defensively does not mean building elaborately.
+The Critic rotates through five stances (listed in `agents/critic.md`) and you do not know which it holds this turn. One of them punishes over-engineering, so building defensively does not mean building elaborately.

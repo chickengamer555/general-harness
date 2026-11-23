@@ -9,18 +9,21 @@
 //   general-verify red --task t     run the gate and record which declared cases were RED
 //   general-verify integrity        run only the static integrity checks
 //   general-verify lock             print the canonical hash of each contract
+//   general-verify --lock           pin the contracts, tests and config in .general-harness/lock.json
+//   general-verify --relock --reason "<why>"   re-pin after an agreed change, and log why
 //   general-verify selftest         prove the integrity checks still catch shortcuts
 //
 // Exit code: 0 green, 1 red, 2 usage error.
 
 import { writeFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
-import { join, resolve, dirname } from 'node:path';
+import { join, resolve, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runMatrix, loadConfig, resolveGate, CONFIG_FILE } from '../matrix.mjs';
 import { loadAll, allCases } from '../core/contract.mjs';
 import { runTests } from '../core/gate.mjs';
 import { runIntegrity } from '../core/quality.mjs';
 import { recordRed, clearProofs } from '../core/redproof.mjs';
+import { writeLock, relock, lockPath } from '../core/lock.mjs';
 import { detectStack } from '../core/stacks.mjs';
 import { VERDICT } from '../core/types.mjs';
 
@@ -31,7 +34,7 @@ const REPO = resolve(KERNEL, '..');
 /* --------------------------------- args --------------------------------- */
 
 function parseArgs(argv) {
-  const out = { _: [], dir: '.', task: null, json: null, requireRedProof: false, verbose: false, force: false };
+  const out = { _: [], dir: '.', task: null, json: null, requireRedProof: false, verbose: false, force: false, lock: false, relock: false, reason: null };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--dir' || a === '-d') out.dir = argv[++i];
@@ -40,6 +43,9 @@ function parseArgs(argv) {
     else if (a === '--require-red-proof') out.requireRedProof = true;
     else if (a === '--verbose' || a === '-v') out.verbose = true;
     else if (a === '--force') out.force = true;
+    else if (a === '--lock') out.lock = true;
+    else if (a === '--relock') out.relock = true;
+    else if (a === '--reason') out.reason = argv[++i];
     else if (a === '--help' || a === '-h') out.help = true;
     else if (a.startsWith('-')) out.badFlag = a;
     else out._.push(a);
@@ -87,6 +93,18 @@ function printReport(report, { verbose }) {
       continue;
     }
 
+    if (l.leg === 'lock') {
+      console.log('  ' + pad('lock', 14) + (MARK[l.verdict] ?? l.verdict) + C.d + '  tier ' + l.tier +
+        (l.files !== undefined ? ', ' + l.files + ' file(s) pinned' : '') + C.x);
+      for (const [k, sym] of [['changed', '~'], ['added', '+'], ['removed', '-']]) {
+        for (const f of l[k] ?? []) console.log('      ' + C.r + sym + C.x + ' ' + f + C.d + ' (' + k + ')' + C.x);
+      }
+      if (l.verdict === VERDICT.SKIP) console.log('      ' + C.d + l.reason + C.x);
+      else if (l.reason) console.log(indent(wrap(l.reason, 92), '      ' + C.r) + C.x);
+      if (l.blockedReason) console.log(indent(wrap(l.blockedReason, 92), '      ' + C.y) + C.x);
+      continue;
+    }
+
     if (l.leg === 'red-proof') {
       const note = l.required ? '' : C.d + '  (advisory except for reported bugs - pass --require-red-proof to enforce)' + C.x;
       console.log('  ' + pad('red-proof', 14) + (MARK[l.verdict] ?? l.verdict) + note);
@@ -114,6 +132,7 @@ function printReport(report, { verbose }) {
       console.log('      ' + C.d + (l.counts.passed ?? '?') + ' passed, ' + (l.counts.failed ?? '?') + ' failed' + C.x);
     }
     if (l.blockedReason) console.log(indent(wrap(l.blockedReason, 92), '      ' + C.y) + C.x);
+    if (l.reason) console.log(indent(wrap(l.reason, 92), '      ' + C.r) + C.x);
     if (l.failing?.length) {
       console.log('      ' + C.r + 'failing:' + C.x + ' ' + l.failing.slice(0, 8).join(', ') +
         (l.failing.length > 8 ? ' (+' + (l.failing.length - 8) + ' more)' : '') +
@@ -310,6 +329,38 @@ async function cmdLock(args) {
   return Object.values(out).some((v) => v === null) ? 1 : 0;
 }
 
+function cmdWriteLock(args) {
+  const root = resolve(args.dir);
+  const config = loadConfig(root);
+  const rel = relative(process.cwd(), lockPath(root)) || lockPath(root);
+  if (args.relock) {
+    if (!args.reason || !args.reason.trim()) {
+      console.error('--relock needs --reason "<why>" - say what was agreed and with whom');
+      return 2;
+    }
+    const res = relock(root, config, args.reason);
+    console.log('');
+    console.log('  relocked ' + rel + C.d + '  (' + Object.keys(res.lock.files).length + ' file(s))' + C.x);
+    if (!res.changed.length) console.log('  ' + C.d + 'nothing had changed' + C.x);
+    for (const c of res.changed) console.log('    ' + C.y + c.status + C.x + ' ' + c.path);
+    console.log('  ' + C.d + 'reason logged to lock-history.jsonl: ' + args.reason.trim() + C.x);
+    console.log('');
+    return 0;
+  }
+  try {
+    const res = writeLock(root, config);
+    console.log('');
+    console.log('  ' + (res.written ? 'locked ' : 'lock already matches ') + rel + C.d + '  (' +
+      Object.keys(res.lock.files).length + ' file(s))' + C.x);
+    if (res.written) for (const f of Object.keys(res.lock.files)) console.log('    ' + f);
+    console.log('');
+    return 0;
+  } catch (e) {
+    console.error(C.r + 'refused: ' + C.x + wrap(e.message, 92));
+    return 1;
+  }
+}
+
 function cmdInit(args) {
   const root = resolve(args.dir);
   const detected = detectStack(root);
@@ -452,6 +503,9 @@ general-verify - the stack-agnostic harness matrix runner
   general-verify integrity        run only the static integrity checks
   general-verify lock             print the canonical hash of each contract
   general-verify selftest         prove the integrity checks still catch shortcuts
+  general-verify --lock           pin contracts, tests and config in .general-harness/lock.json
+  general-verify --relock --reason "<why>"
+                                  re-pin after an agreed change; logs to lock-history.jsonl
 
 Options
   -d, --dir <path>          project root (default: .)
@@ -472,6 +526,7 @@ async function main() {
 
   const cmd = args._[0] ?? 'run';
   try {
+    if (args.lock || args.relock) return cmdWriteLock(args);
     if (cmd === 'detect') return cmdDetect(args);
     if (cmd === 'init') return cmdInit(args);
     if (cmd === 'lint') return await cmdLint(args);

@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "files": {
+    "general-harness.config.json": "7fbdedb5a045dc6f079615189b728a6d282b37ccc23ebe9b7931cebfa90a4e64",
+    "test/contract.test.mjs": "0e8be15cdf7581d42e7aad38fe694d936b2b432535f485e54d48c83245204781",
+    "test/dispute.test.mjs": "7702d651b347b21b0ca18f81bf472300d010b118aac982b51f4effba142b5241",
+    "test/gate.test.mjs": "97dd9514c3355be844b238aa296c903c8f19e5fb525431371fff3f35b7417e4b",
+    "test/install.test.mjs": "9d35abb26b09a5f5f5933651422a24aeaebecd7bd980675ce3165d6b8ccbe0e4",
+    "test/lock.test.mjs": "a2476a6a2aae633c283d32b3642a2b04153271d79fae80d04700a748772deef8",
+    "test/matrix.test.mjs": "9fb16e20122eb8f135298f665dfa7060346190a5d825f4c6772186f185da9a59",
+    "test/quality.test.mjs": "084826c94a00e0a681c73e87a308e6b4b5832bd59f8434e91a7135596fbe29ff",
+    "test/redproof.test.mjs": "1a88847cb19b9734ecc31c165c47b116a43c85ee978e8f5ddf352ea0c4a781aa",
+    "test/skill-docs.test.mjs": "808346b1d7a730002f48631d249424260224baca68cbad5043356eac16b1f022",
+    "test/stacks.test.mjs": "4c9f345e480d167bf8f964949dfbff6d4b909d6984e33f4742bf38c481634e0f",
+    "verify/dispute-exit.task.json": "c12fac568185feff62c829278703a5462156f2479ec87191d051e5f4b2ef0780",
+    "verify/gradle-support.task.json": "83138d30b7ecadd0ba820511268030aade752fe2c66a1c5ca9eca723c65c162d",
+    "verify/installer.task.json": "5edddd5a2e5adfa36b0512c598b0031ad5f95a1610368aa7b4bd58e14eb4f0fe",
+    "verify/kernel-integrity.task.json": "1f7e0a441326fbf0dc97e5ebb65ca04af4f7d74df8cdc47a4a3d6caf111c6005",
+    "verify/reported-bugs.task.json": "ff1efed417ecbb80bf0f2916d506a2784354518216b644ded9fd5d20bbdc5ad2",
+    "verify/run-lock.task.json": "45038da839462840a79e8f79f2ccda947a7ff67dc9461f320469b73d995d9be6",
+    "verify/self-scan-fidelity.task.json": "9795912bdc3011bc886e1517e7701e3ccf68b371bf4928f48b068af14501122a",
+    "verify/skill-docs.task.json": "2ca76c7acf97141c881f41a0df62892501c4920f8bf731efbc97d51d5db32bea"
+  },
+  "at": "2026-11-23T06:12:19.589Z"
+}

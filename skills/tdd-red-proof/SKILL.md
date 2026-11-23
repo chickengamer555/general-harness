@@ -1,6 +1,6 @@
 ---
 name: tdd-red-proof
-description: Why the red proof is the only checkable part of TDD, how to record one, how to read a weak or stale proof, and what to do when a test refuses to go red. Use when running general-verify red, when a red proof is missing or weak, or when deciding whether a test actually proves anything.
+description: Use when running general-verify red, when a red proof is missing, weak (exit-code-only), stale, or a case refuses to go red, or when judging whether a test proves anything. Not for: choosing a tier or the iron rules (general-harness); running the builder/critic loop (loop-orchestration); web contracts (web-harness).
 ---
 
 # The red proof

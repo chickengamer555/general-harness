@@ -9,6 +9,7 @@
 //   gate       - the project's own test/lint/typecheck commands
 //   integrity  - the checks the gate structurally cannot run on itself
 //   red proof  - evidence each case was seen failing before it passed
+// plus the lock: the tests, contracts and config the other three trust, hashed.
 //
 // A run is green only when every leg is green. Green tests with a focused test
 // left in the file is not green; it is a suite that stopped running most of
@@ -18,10 +19,11 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { VERDICT } from './core/types.mjs';
 import { detectStack } from './core/stacks.mjs';
-import { runTests, runAux, excerpt } from './core/gate.mjs';
+import { runTests, runAux, excerpt, isTrivialCommand } from './core/gate.mjs';
 import { runIntegrity } from './core/quality.mjs';
 import { loadAll, allCases } from './core/contract.mjs';
 import { checkRedProof } from './core/redproof.mjs';
+import { lockLeg, strictestTier } from './core/lock.mjs';
 
 export const CONFIG_FILE = 'general-harness.config.json';
 
@@ -65,10 +67,16 @@ export async function runMatrix({ dir = '.', task = null, requireRedProof = fals
   const contractErrors = units.flatMap((u) => u.errors);
   const legs = [];
 
+  /* ------------------------------- lock -------------------------------- */
+  const tier = strictestTier(units.map((u) => u.contract?.tier));
+  legs.push(lockLeg(root, config, tier));
+
   /* ------------------------------- gate -------------------------------- */
   let testResult = null;
   if (!skipGate) {
-    if (!resolved.gate.test) {
+    if (typeof resolved.gate.test === 'string' && isTrivialCommand(resolved.gate.test)) {
+      legs.push(trivialLeg('test', resolved.gate.test));
+    } else if (!resolved.gate.test) {
       legs.push({
         leg: 'test',
         verdict: VERDICT.BLOCKED,
@@ -93,6 +101,10 @@ export async function runMatrix({ dir = '.', task = null, requireRedProof = fals
     }
 
     for (const leg of ['lint', 'typecheck']) {
+      if (typeof resolved.gate[leg] === 'string' && isTrivialCommand(resolved.gate[leg])) {
+        legs.push(trivialLeg(leg, resolved.gate[leg]));
+        continue;
+      }
       if (!resolved.gate[leg]) continue;
       const r = runAux(resolved.gate[leg], root);
       legs.push({
@@ -146,6 +158,7 @@ export async function runMatrix({ dir = '.', task = null, requireRedProof = fals
     runner: resolved.runner,
     gate: resolved.gate,
     gateSource: resolved.gateSource,
+    tier,
     contracts: units.map((u) => ({
       task: u.contract?.task ?? null,
       path: u.path,
@@ -159,6 +172,16 @@ export async function runMatrix({ dir = '.', task = null, requireRedProof = fals
     legs,
     contractErrors,
     summary,
+  };
+}
+
+function trivialLeg(leg, command) {
+  return {
+    leg,
+    command,
+    verdict: VERDICT.FAIL,
+    reason: 'the ' + leg + ' command ' + JSON.stringify(command) + ' tests nothing - it cannot fail, so its green is a constant. ' +
+      'Declare the real command in ' + CONFIG_FILE + ', or null to disable the leg openly.',
   };
 }
 
@@ -185,6 +208,8 @@ export function rollup({ legs, contractErrors, units, requireRedProof, redProofs
           'red-proof: ' + miss.length + ' case(s) never observed failing before they passed (' +
           miss.slice(0, 4).join(', ') + ') - a test that was never red has not been shown to be wired to anything'
         );
+      } else if (l.reason) {
+        breakers.push(l.leg + ': ' + l.reason);
       } else {
         breakers.push(l.leg + ': failed (' + (l.command ?? 'no command') + ')');
       }

@@ -1,0 +1,45 @@
+{
+  "$schema": "../kernel/schemas/task-contract.schema.json",
+  "task": "dispute-exit",
+  "title": "A legal way for the Builder to say the contract and a check disagree",
+  "description": "When a test and the contract disagree, the Builder has no honest move today except editing the test until it is green. A dispute verdict gives it one: it names the clause, what conflicts with it and why, stops the loop, and hands the human a three-way choice - fix the code, the clause, or the check.",
+  "tier": "standard",
+  "clauses": [
+    {
+      "id": "D1",
+      "text": "The handoff schema accepts dispute as a Builder self-verdict, and a dispute verdict requires a dispute object with clause, conflicts_with and because.",
+      "observable_by": "schemas/handoff.schema.json lists dispute in builder_self_verdict and an if/then requires dispute, whose required keys are clause, conflicts_with and because"
+    },
+    {
+      "id": "D2",
+      "text": "The run summary can end with termination_reason disputed.",
+      "observable_by": "schemas/summary.schema.json lists disputed in termination_reason"
+    },
+    {
+      "id": "D3",
+      "text": "The builder, critic, build command and loop protocol all say a dispute stops the loop and goes to the human as fix the code, the clause, or the check, and the builder prompt forbids editing a locked file to get green.",
+      "observable_by": "each of those files mentions dispute and the three-way choice, and agents/builder.md contains the sentence about following the contract and never editing a locked file"
+    }
+  ],
+  "units": [
+    {
+      "id": "schemas",
+      "surface": "schemas/handoff.schema.json",
+      "tests": "test/dispute.test.mjs",
+      "cases": [
+        { "id": "dispute-is-a-verdict", "description": "dispute in the enum", "maps_to_clause": "D1", "test_name": "the handoff schema accepts dispute as a builder self-verdict" },
+        { "id": "dispute-needs-its-object", "description": "the conditional requirement and its three keys", "probe": true, "maps_to_clause": "D1", "test_name": "a dispute verdict requires a dispute object naming clause, conflicts_with and because" },
+        { "id": "summary-disputed", "description": "disputed termination reason", "maps_to_clause": "D2", "test_name": "the summary schema has a disputed termination reason" }
+      ]
+    },
+    {
+      "id": "docs",
+      "surface": "agents/builder.md",
+      "tests": "test/dispute.test.mjs",
+      "cases": [
+        { "id": "docs-route-dispute-to-human", "description": "builder, critic, gh-build and loop-orchestration", "probe": true, "maps_to_clause": "D3", "test_name": "every loop document routes a dispute to the human as a three-way choice" },
+        { "id": "builder-prompt-forbids-locked-edits", "description": "the exact prompt sentence", "probe": true, "maps_to_clause": "D3", "test_name": "the builder prompt says to follow the contract and never edit a locked file" }
+      ]
+    }
+  ]
+}

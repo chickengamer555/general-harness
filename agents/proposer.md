@@ -30,13 +30,7 @@ Each case becomes a test. **Every unit needs at least one `probe: true` case**, 
 
 ## Sizing
 
-Read the description and propose a `tier`:
-
-- **quick** — one unit, a handful of cases, no subagents. Most tasks.
-- **standard** — several units, or code that will be maintained.
-- **full** — auth, money, data loss, an external audience.
-
-Say why in one line. Proposing `full` for a small utility wastes an afternoon; proposing `quick` for an auth change ships a hole.
+Propose a `tier` (quick, standard or full; the table is in `skills/general-harness/SKILL.md`) and say why in one line. Flag anything touching auth, money, data loss or an external audience as `full`.
 
 ## Rounds
 

@@ -339,3 +339,16 @@ export function excerpt(text, lines = 12) {
   const head = useful.slice(-lines);
   return head.join('\n');
 }
+
+/**
+ * A gate command that cannot fail: `true`, `exit 0`, `:`, an echo, nothing, or
+ * a chain made only of those. It turns the test leg into a constant, and a
+ * constant green is the cheapest fake a config edit can buy.
+ */
+const TRIVIAL_STEP = [/^$/, /^true$/, /^:$/, /^exit(\s+0)?$/, /^echo(\s.*)?$/];
+
+export function isTrivialCommand(command) {
+  return String(command ?? '')
+    .split(/&&|\|\||;|\n/)
+    .every((step) => TRIVIAL_STEP.some((re) => re.test(step.trim())));
+}

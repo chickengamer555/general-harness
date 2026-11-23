@@ -1,0 +1,91 @@
+{
+  "$schema": "../kernel/schemas/task-contract.schema.json",
+  "task": "run-lock",
+  "title": "A lockfile over what the run trusts, checked on every run",
+  "description": "Every run hashes the files that decide what green means - the task contracts, the tests mapped to them or matched by the gate command, and the harness config - and compares them with .general-harness/lock.json. A test edited to get green, a config gate swapped for `true`, or a contract quietly changed shows up as a named failure instead of a green run.",
+  "tier": "standard",
+  "clauses": [
+    {
+      "id": "L1",
+      "text": "--lock writes .general-harness/lock.json holding a lock schema version and a sha256 for every task contract, every test file mapped to a unit or matched by the gate test command, and the harness config.",
+      "observable_by": "writeLock on a temp project produces a lock whose files map lists exactly those paths with 64-hex hashes and whose version is LOCK_VERSION"
+    },
+    {
+      "id": "L2",
+      "text": "Every run recomputes the hashes, and a changed, added or removed locked file is a FAIL leg that names the file.",
+      "observable_by": "runMatrix after editing a locked test returns a FAIL lock leg whose breaker names that path; adding and removing a file are named the same way"
+    },
+    {
+      "id": "L3",
+      "text": "A missing lock is allowed only when the strictest tier across the selected contracts is quick; otherwise the run is BLOCKED with a message to run --lock.",
+      "observable_by": "runMatrix with no lock gives a SKIP lock leg for quick-only contracts and a BLOCKED leg mentioning --lock when any selected contract is standard"
+    },
+    {
+      "id": "L4",
+      "text": "--relock --reason rewrites the lock, appends {time, reason, changed} to lock-history.jsonl and reports what changed; --relock without a reason is refused, and --lock over an existing drifted lock refuses and points to --relock.",
+      "observable_by": "relock appends one history line carrying the reason and the changed paths; writeLock over drift and relock with no reason both throw, naming --relock and --reason"
+    },
+    {
+      "id": "L5",
+      "text": "A gate command that is trivially true - true, exit 0, :, an echo, or empty - is a FAIL with a reason saying it tests nothing.",
+      "observable_by": "isTrivialCommand accepts each of those forms and rejects a real runner; runMatrix with config gate.test \"true\" returns a FAIL test leg with that reason"
+    },
+    {
+      "id": "L6",
+      "text": "A file checked out with CRLF line endings hashes the same as its LF form, so a Windows checkout does not read as drift.",
+      "observable_by": "hashFile gives the same digest for the CRLF and LF forms of one text"
+    },
+    {
+      "id": "L7",
+      "text": "The command line exposes --lock, --relock and --reason, and prints what changed.",
+      "observable_by": "spawning general-verify --lock writes the lock, --lock after an edit exits 1 naming --relock, and --relock --reason exits 0 naming the changed file"
+    }
+  ],
+  "units": [
+    {
+      "id": "lock",
+      "surface": "kernel/core/lock.mjs",
+      "tests": "test/lock.test.mjs",
+      "cases": [
+        { "id": "lock-records-trusted-files", "description": "contract, mapped test, gate-glob test and config are all hashed, with a version", "maps_to_clause": "L1", "test_name": "the lock records a sha256 for every contract, mapped test, gate-glob test and the config" },
+        { "id": "relock-appends-history", "description": "relock with a reason writes one history line", "maps_to_clause": "L4", "test_name": "relock rewrites the lock and appends the reason and what changed to the history" },
+        { "id": "lock-refuses-drift", "description": "--lock over a drifted lock", "probe": true, "maps_to_clause": "L4", "test_name": "writing a lock over a drifted one refuses and points to relock" },
+        { "id": "relock-needs-reason", "description": "relock with an empty reason", "probe": true, "maps_to_clause": "L4", "test_name": "relock without a reason is refused" },
+        { "id": "crlf-is-not-drift", "description": "the same text in CRLF and LF", "probe": true, "maps_to_clause": "L6", "test_name": "a CRLF checkout hashes the same as LF" }
+      ]
+    },
+    {
+      "id": "matrix-lock-leg",
+      "surface": "kernel/matrix.mjs",
+      "tests": "test/lock.test.mjs",
+      "cases": [
+        { "id": "edited-test-is-drift", "description": "a locked test file edited after locking", "probe": true, "maps_to_clause": "L2", "test_name": "a run names an edited test file as lock drift" },
+        { "id": "added-and-removed-named", "description": "a new contract added and a locked test deleted", "probe": true, "maps_to_clause": "L2", "test_name": "a run names added and removed files as lock drift" },
+        { "id": "old-lock-version-fails", "description": "a lock written by another schema version", "probe": true, "maps_to_clause": "L2", "test_name": "a lock with another schema version fails and asks for a relock" },
+        { "id": "missing-lock-quick-allowed", "description": "quick-only contracts with no lock", "maps_to_clause": "L3", "test_name": "a missing lock is allowed when every selected contract is quick" },
+        { "id": "missing-lock-standard-blocked", "description": "a standard contract with no lock", "probe": true, "maps_to_clause": "L3", "test_name": "a missing lock blocks the run when the strictest selected tier is standard" },
+        { "id": "trivial-gate-fails", "description": "config gate.test set to true", "probe": true, "maps_to_clause": "L5", "test_name": "a trivially true gate command fails the run with a reason" }
+      ]
+    },
+    {
+      "id": "gate-trivial",
+      "surface": "kernel/core/gate.mjs",
+      "tests": "test/lock.test.mjs",
+      "cases": [
+        { "id": "trivial-forms-recognised", "description": "true, exit 0, :, echo, empty, and chains of them; a real runner is not trivial", "probe": true, "maps_to_clause": "L5", "test_name": "isTrivialCommand recognises commands that test nothing" }
+      ]
+    },
+    {
+      "id": "cli",
+      "surface": "kernel/bin/general-verify.mjs",
+      "tests": "test/lock.test.mjs",
+      "cases": [
+        { "id": "cli-lock-relock", "description": "--lock, then an edit, then --lock refused, then --relock --reason", "probe": true, "maps_to_clause": "L7", "test_name": "the CLI locks, refuses to lock over drift, and relocks with a reason" }
+      ]
+    }
+  ],
+  "non_goals": [
+    "Protecting source files under test. The builder is meant to change those; the lock covers what decides whether the change is accepted.",
+    "Stopping a human from relocking. --relock is the legal path and leaves a reasoned trail in lock-history.jsonl."
+  ]
+}

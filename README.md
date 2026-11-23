@@ -141,6 +141,20 @@ Proofs record their own **confidence** — `exact`, `heuristic`, or
 `exit-code-only` — and a weak proof says so rather than implying it knew which
 case failed.
 
+### lock — what the run trusts, pinned
+
+`general-verify --lock` writes `.general-harness/lock.json`: a sha256 of every
+task contract, every test file a unit maps to or the gate command names (paths
+and globs), and `general-harness.config.json`. Every run recomputes it. A
+changed, added or removed file is a `FAIL` that names it - a test edited to get
+green is caught by name. A missing lock is allowed only when every selected
+contract is `quick`; above that the run is `BLOCKED` until you lock.
+
+An agreed change is relocked with `--relock --reason "<why>"`, which appends
+`{time, reason, changed}` to `.general-harness/lock-history.jsonl`. `--lock`
+over existing drift refuses. A gate command that cannot fail (`true`, `exit 0`,
+`:`, an `echo`, empty) is a `FAIL` on its own.
+
 ### When a check is wrong about your code
 
 Two escape hatches, both deliberately visible:
@@ -258,6 +272,8 @@ doing something else.
 | `general-verify red` | run the gate and record which cases were RED |
 | `general-verify integrity` | just the static checks |
 | `general-verify lock` | canonical hash per contract |
+| `general-verify --lock` | write `.general-harness/lock.json`; refuses over drift |
+| `general-verify --relock --reason "<why>"` | rewrite the lock and log why to `lock-history.jsonl` |
 | `general-verify selftest` | prove the integrity checks still catch shortcuts |
 
 `--require-red-proof` · `--task <id>` · `--json <path>` · `--verbose`

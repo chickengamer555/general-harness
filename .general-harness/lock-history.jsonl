@@ -1,0 +1,1 @@
+{"time":"2026-11-23T06:12:19.589Z","reason":"added skill-docs contract and its test (skill size, dead-reference and routing checks) for the lean skill rewrite","changed":[{"path":"test/skill-docs.test.mjs","status":"added"},{"path":"verify/skill-docs.task.json","status":"added"}]}

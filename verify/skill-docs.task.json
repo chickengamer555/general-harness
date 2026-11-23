@@ -1,0 +1,30 @@
+{
+  "$schema": "../kernel/schemas/task-contract.schema.json",
+  "task": "skill-docs",
+  "title": "Skill documents that stay small, route correctly and point at real files",
+  "description": "Only the start of a skill survives compaction, agents follow a skill's description instead of its body, and a document that names a missing file sends the reader nowhere. The skill, command and agent documents stay under a size cap, describe when to use them and what they are not for, put the rules first, name only files that exist, carry no personal paths, and come with prompts for checking that they trigger.",
+  "tier": "standard",
+  "clauses": [
+    { "id": "S1", "text": "Every SKILL.md is at most 8 KB.", "observable_by": "the byte size of each skills/*/SKILL.md is 8192 or less" },
+    { "id": "S2", "text": "Every relative path, skill, command and agent named in skills, commands and agents exists.", "observable_by": "each <kernel>/ path and backticked repo path resolves, each backticked skill and /command names one in this repo or a listed neighbour, and each subagent_type names an agent" },
+    { "id": "S3", "text": "No public document carries an absolute home path or an email address.", "observable_by": "no /home/<name>, /Users/<name>, C:\\Users\\ or email pattern in skills, commands, agents, docs, README.md or CLAUDE.md" },
+    { "id": "S4", "text": "Each skill description starts with when to use it and says what it is not for, and the entry skill names its neighbours.", "observable_by": "each description starts with \"Use when\" and contains \"Not for:\"; the entry skill's names web-harness, godot-verify:godot-harness and taste-skill" },
+    { "id": "S5", "text": "The rules that must survive compaction sit in the first 40 lines of the entry skill.", "observable_by": "the first 40 lines mention the matrix, reported bugs, red, locked files, --relock, dispute and fixed" },
+    { "id": "S6", "text": "Each skill has prompts for a manual trigger eval.", "observable_by": "docs/skill-triggers.md has a section per skill with 3 to 6 should-trigger and 3 to 6 near-miss prompts" }
+  ],
+  "units": [
+    {
+      "id": "docs",
+      "surface": "skills/general-harness/SKILL.md",
+      "tests": "test/skill-docs.test.mjs",
+      "cases": [
+        { "id": "skill-md-under-cap", "description": "the pre-rewrite entry skill is 9391 bytes", "probe": true, "maps_to_clause": "S1" },
+        { "id": "no-dead-references", "description": "commands name <kernel>/bin/general-verify.mjs, which is not a repo path", "probe": true, "maps_to_clause": "S2" },
+        { "id": "no-personal-paths", "description": "already held before the rewrite and must keep holding", "guard": true, "maps_to_clause": "S3" },
+        { "id": "descriptions-route-not-summarise", "description": "descriptions that summarise the workflow", "probe": true, "maps_to_clause": "S4" },
+        { "id": "iron-rules-lead", "description": "dispute and relock sit below line 40 today", "maps_to_clause": "S5" },
+        { "id": "trigger-evals-listed", "description": "no trigger file yet", "maps_to_clause": "S6" }
+      ]
+    }
+  ]
+}

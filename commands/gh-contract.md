@@ -8,13 +8,7 @@ You are the **orchestrator**. Produce the task contract for **`$1`**. Everything
 
 ## Size it first
 
-Read the description and pick a tier. This is the first real decision and it deserves one sentence of thought:
-
-- **quick** — one unit, a handful of cases. Most tasks. Draft the contract yourself; no subagents.
-- **standard** — several units, or code that will be maintained. Draft it yourself, then take one adversarial pass over it.
-- **full** — auth, money, data loss, an external audience. Run the proposer ↔ qa loop below.
-
-Say which tier and why, in one line. Over-ceremony is a real cost: people route around a harness that turns a five-minute fix into an hour.
+Pick the tier from the table in `<kernel>/skills/general-harness/SKILL.md` and say which and why in one line. Quick: draft the contract yourself. Standard: draft it yourself, then take one adversarial pass over it. Full: run the proposer <-> qa loop below.
 
 ## Setup
 
@@ -23,7 +17,7 @@ Create the contracts directory (`verify/` by default) and, at standard or full t
 **Check the gate resolves first:**
 
 ```
-node <kernel>/bin/general-verify.mjs detect
+node <kernel>/kernel/bin/general-verify.mjs detect
 ```
 
 If nothing is detected, ask the user for the test command now rather than discovering it mid-build. Never guess a build command — running the wrong one in an unfamiliar repo can be destructive, and a wrong guess is worse than a question.
@@ -43,14 +37,14 @@ Whoever drafts it — you at quick tier, `gen-proposer` at full — the standard
 2. **Dispatch `gen-qa`** with the draft. It writes a review with `verdict: executable | not-executable` and `flagged_clauses[]`.
 3. Terminate on `executable`. After 3 rounds without it, keep the draft, record the open flags, and carry them forward as Critic input. **Never spin past 3 rounds** — an unresolved clause carried visibly beats one argued in circles.
 
-## Validate and lock
+## Validate and hash
 
 ```
-node <kernel>/bin/general-verify.mjs lint --task $1
-node <kernel>/bin/general-verify.mjs lock --task $1
+node <kernel>/kernel/bin/general-verify.mjs lint --task $1
+node <kernel>/kernel/bin/general-verify.mjs lock --task $1
 ```
 
-The linter enforces the completeness gate: observable clauses, mapped cases, a probe per unit. Recording the hash makes a goalpost moved mid-run immediately visible.
+The linter enforces the completeness gate: observable clauses, mapped cases, a probe per unit, and the user's words on every `reported` case. `lock` prints the contract hash; the run lock (`--lock`) is taken after the red proofs, at standard or full tier.
 
 ## Human gateway
 

@@ -31,7 +31,7 @@ The stance shapes what you *weight*, not whether you look at everything.
 
 2. **Read `verification_t<N>.json` as primary evidence.** It is orchestrator-produced — you and the Builder read the same file, so fabrication is impossible by construction. If it looks suspicious, re-run read-only yourself:
    ```
-   node <kernel>/bin/general-verify.mjs --task <task> --require-red-proof
+   node <kernel>/kernel/bin/general-verify.mjs --task <task> --require-red-proof
    ```
    That command runs tests and reads files; it changes no source. A defensible re-verification, not a breach of your read-only role.
 
@@ -51,6 +51,7 @@ The stance shapes what you *weight*, not whether you look at everything.
 - **`pass`** — gate green, red proofs sound, tests meaningful, no blocking gap. Two consecutive passes plus the Builder's `pass` self-verdict end the run only if the orchestrator's matrix is GREEN on that turn; your `pass` never overrides a red matrix.
 - **`revise`** — specific, fixable issues. The common mid-loop verdict.
 - **`block`** — fundamental: a clause has no honest test, a test is tautological, a shortcut was taken and not disclosed, or the contract is unsatisfiable. Rare.
+- **A Builder `dispute`** ends the loop before your turn matters: the human decides whether to fix the code, the clause, or the check. If you see a test edited to match the code instead of a dispute being raised, that is `block` — and the lock leg will name the file.
 - **`highest_impact_change`** is required whenever the verdict is not `pass`. One concrete, single-turn-actionable sentence. "Improve the tests" wastes a turn. "The `handles-empty-input` test asserts `equal(result, '')`, which the not-implemented stub also satisfied — assert on a non-trivial expected value so it can actually fail" gets fixed.
 - **`gaps_the_gate_cannot_see`** is your core output. Tie each to a clause or case id where you can.
 - Do not compute a weighted total. There is none. Narrative gaps plus a verdict — that is the instrument.
