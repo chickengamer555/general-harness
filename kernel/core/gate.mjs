@@ -152,6 +152,19 @@ const EXTRACTORS = {
     return names.size ? { names: [...names], confidence: CONFIDENCE.exact } : null;
   },
 
+  gradle(out) {
+    // Gradle's console reporter: "Class > name FAILED", with "()" appended to
+    // JUnit 5 method names. The build itself also prints "> Task :x FAILED" and
+    // "BUILD FAILED", which are not tests and must not become phantom names.
+    const names = new Set();
+    for (const line of out.split('\n')) {
+      if (/^\s*>\s*Task\b/.test(line)) continue;
+      const m = line.match(/^\s*(\S.*?\s>\s.+?)(?:\(\))?\s+FAILED\s*$/);
+      if (m) names.add(m[1].trim());
+    }
+    return names.size ? { names: [...names], confidence: CONFIDENCE.exact } : null;
+  },
+
   dotnet(out) {
     const names = new Set();
     for (const line of out.split('\n')) {

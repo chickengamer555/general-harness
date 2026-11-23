@@ -124,6 +124,7 @@ const SKIPPED = [
   { re: /#\[\s*ignore\s*[\]\(]/g, lang: 'rust' },
   { re: /\bt\.Skip(?:Now)?\s*\(/g, lang: 'go' },
   { re: /\[\s*(?:Ignore|Skip)\s*[\]\(]/g, lang: 'dotnet' },
+  { re: /@(?:Ignore|Disabled)\b/g, lang: 'jvm' },
 ];
 
 const SUPPRESSIONS = [

@@ -130,6 +130,26 @@ const DETECTORS = [
     sourceRe: /\.(cs|fs)$/,
   },
   {
+    id: 'gradle',
+    label: 'Gradle (Kotlin / Java / Android)',
+    detect: (dir) => has(dir, 'settings.gradle.kts', 'settings.gradle', 'build.gradle.kts', 'build.gradle'),
+    gate(dir) {
+      // Only ever the project's own wrapper: a system gradle may be a different
+      // major version from the one the build was written for.
+      if (!has(dir, 'gradlew')) return { gate: {}, runner: 'gradle' };
+      const builds = ['build.gradle.kts', 'build.gradle', 'app/build.gradle.kts', 'app/build.gradle']
+        .map((f) => safeRead(join(dir, f)))
+        .join('\n');
+      // An Android module has no plain `test` task worth running; its debug
+      // unit tests are the gate.
+      const android = /com\.android\.|plugins\.android\./.test(builds);
+      const test = android ? './gradlew testDebugUnitTest --console=plain' : './gradlew test --console=plain';
+      return { gate: { test }, runner: 'gradle' };
+    },
+    testFileRe: /Tests?\.(kt|java)$/,
+    sourceRe: /\.(kt|kts|java)$/,
+  },
+  {
     id: 'make',
     label: 'Make',
     detect: (dir) => has(dir, 'Makefile'),

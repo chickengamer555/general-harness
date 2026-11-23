@@ -102,3 +102,25 @@ test('a partial config gate keeps the detected legs it did not override', () => 
     assert.ok(r.gate.lint, 'overriding one leg must not silently delete the others');
   } finally { p.cleanup(); }
 });
+
+test('detects a gradle project and runs its unit tests through the wrapper', () => {
+  const plain = detect({ 'settings.gradle.kts': 'rootProject.name = "x"\n', 'gradlew': '#!/bin/sh\n' });
+  assert.equal(plain.stack, 'gradle');
+  assert.equal(plain.runner, 'gradle');
+  assert.match(plain.gate.test, /^\.\/gradlew test\b/);
+
+  const android = detect({
+    'settings.gradle.kts': 'include(":app")\n',
+    'gradlew': '#!/bin/sh\n',
+    'app/build.gradle.kts': 'plugins { alias(libs.plugins.android.application) }\n',
+  });
+  assert.match(android.gate.test, /^\.\/gradlew testDebugUnitTest\b/,
+    'an Android module has no plain `test` task worth running; the debug unit tests are the gate');
+});
+
+test('a gradle build with no wrapper resolves no gate rather than guessing a global gradle', () => {
+  const d = detect({ 'build.gradle': 'apply plugin: "java"\n' });
+  assert.equal(d.stack, 'gradle');
+  assert.deepEqual(d.gate, {},
+    'a system gradle may be a different major version from the one the build expects');
+});

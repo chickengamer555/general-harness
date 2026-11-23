@@ -220,6 +220,50 @@
       "contract_hash": "34f5aa52f8bfc88cfe230af7f30eae5f06fa116663b282bf0115c64f91bd2502",
       "gate_command": "node --test \"test/*.test.mjs\"",
       "confidence": "exact"
+    },
+    {
+      "task": "gradle-support",
+      "unit": "gate",
+      "case": "gradle-names",
+      "key": "gate/gradle-names",
+      "matched_test": "gate extracts gradle failing test names and ignores task and build lines",
+      "failed_at": "2026-10-21T02:19:36.771Z",
+      "contract_hash": "48bc085b2e5978a13dc7a03835ef83e35aa18fc437ffa3eab3fc25ddfefedfcc",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "gradle-support",
+      "unit": "quality",
+      "case": "junit-skips",
+      "key": "quality/junit-skips",
+      "matched_test": "integrity finds JUnit skips in Kotlin and Java tests",
+      "failed_at": "2026-10-21T02:19:36.771Z",
+      "contract_hash": "48bc085b2e5978a13dc7a03835ef83e35aa18fc437ffa3eab3fc25ddfefedfcc",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "gradle-support",
+      "unit": "stacks",
+      "case": "gradle-detect",
+      "key": "stacks/gradle-detect",
+      "matched_test": "detects a gradle project and runs its unit tests through the wrapper",
+      "failed_at": "2026-10-21T02:19:36.771Z",
+      "contract_hash": "48bc085b2e5978a13dc7a03835ef83e35aa18fc437ffa3eab3fc25ddfefedfcc",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
+    },
+    {
+      "task": "gradle-support",
+      "unit": "stacks",
+      "case": "no-wrapper-no-guess",
+      "key": "stacks/no-wrapper-no-guess",
+      "matched_test": "a gradle build with no wrapper resolves no gate rather than guessing a global gradle",
+      "failed_at": "2026-10-21T02:19:36.771Z",
+      "contract_hash": "48bc085b2e5978a13dc7a03835ef83e35aa18fc437ffa3eab3fc25ddfefedfcc",
+      "gate_command": "node --test \"test/*.test.mjs\"",
+      "confidence": "exact"
     }
   ]
 }

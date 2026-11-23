@@ -111,6 +111,14 @@ test('integrity finds skips across python, rust and go', () => {
   assert.ok(go.stats.skipped >= 1, 't.Skip missed');
 });
 
+test('integrity finds JUnit skips in Kotlin and Java tests', () => {
+  const kt = scan({ 'app/src/test/kotlin/ThingTest.kt': marker.junitIgnore() });
+  assert.ok(kt.stats.skipped >= 1, 'JUnit 4 @Ignore missed in a Kotlin test');
+
+  const java = scan({ 'src/test/java/ThingTest.java': marker.junitDisabled() });
+  assert.ok(java.stats.skipped >= 1, 'JUnit 5 @Disabled missed in a Java test');
+});
+
 /* ----------------------------- source checks ------------------------------ */
 
 test('integrity finds suppressions, debug leftovers and swallowed errors in source', () => {

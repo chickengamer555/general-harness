@@ -192,6 +192,37 @@ test('gate extracts go and cargo failing test names', () => {
   assert.deepEqual(cargo.names, ['slug::empty']);
 });
 
+test('gate extracts gradle failing test names and ignores task and build lines', () => {
+  // Gradle's console reporter prints "Class > name FAILED" per failing test, but
+  // also "> Task :app:testDebugUnitTest FAILED" and "BUILD FAILED" for the build
+  // itself. Those must not leak in as phantom test names.
+  const captured = [
+    '> Task :app:testDebugUnitTest',
+    '',
+    'LessonValidatorTest > rejects a step with two correct answers FAILED',
+    '    java.lang.AssertionError at LessonValidatorTest.kt:42',
+    '',
+    'FsrsTest > first review schedules one day out() FAILED',
+    '    org.opentest4j.AssertionFailedError at FsrsTest.kt:17',
+    '',
+    'FsrsTest > again resets stability PASSED',
+    '',
+    '3 tests completed, 2 failed',
+    '',
+    '> Task :app:testDebugUnitTest FAILED',
+    '',
+    'FAILURE: Build failed with an exception.',
+    'BUILD FAILED in 12s',
+  ].join('\n');
+  const { extractForRunner } = requireInternal();
+  const got = extractForRunner('gradle', captured);
+  assert.ok(got, 'expected gradle names to be extracted');
+  assert.deepEqual(got.names.sort(), [
+    'FsrsTest > first review schedules one day out',
+    'LessonValidatorTest > rejects a step with two correct answers',
+  ]);
+});
+
 /* ------------------------------- aux legs --------------------------------- */
 
 test('runAux passes on a zero exit and fails on a non-zero one', () => {

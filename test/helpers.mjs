@@ -42,6 +42,8 @@ export const marker = {
   assertionFree: (name) => 'test(' + JSON.stringify(name) + ', () => { const r = go(); return r; });',
   pytestSkip: () => '@pytest' + '.mark.skip\ndef test_thing():\n    assert True\n',
   rustIgnore: () => '#[' + 'ignore]\nfn thing() {}\n',
+  junitIgnore: () => '@' + 'Ignore\n@Test\nfun thing() { assertTrue(true) }\n',
+  junitDisabled: () => '@' + 'Disabled\n@Test\nfun thing() { assertTrue(true) }\n',
   goSkip: () => 'func TestThing(t *testing.T) {\n\tt' + '.Skip("later")\n}\n',
   tsIgnore: () => '// @ts-' + 'ignore\n',
   eslintDisable: () => '/* eslint-' + 'disable no-unused-vars */\n',

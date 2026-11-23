@@ -1,0 +1,55 @@
+{
+  "$schema": "../kernel/schemas/task-contract.schema.json",
+  "task": "gradle-support",
+  "title": "Gradle / JUnit support, so Kotlin and Android projects get real red proofs",
+  "description": "The kernel recognised Kotlin and Java files but had no Gradle runner: failing test names could not be parsed, so every red proof on a Kotlin project degraded to exit-code-only evidence, and JUnit skip annotations were invisible to the integrity leg.",
+  "tier": "standard",
+  "clauses": [
+    {
+      "id": "G1",
+      "text": "Failing test names are extracted from Gradle's console output, and Gradle's own task and build failure lines are never mistaken for tests.",
+      "observable_by": "extractForRunner('gradle', captured) returns exactly the two failing tests in a captured run that also contains '> Task ... FAILED' and 'BUILD FAILED'"
+    },
+    {
+      "id": "G2",
+      "text": "JUnit skip annotations in Kotlin and Java tests are reported by the integrity leg.",
+      "observable_by": "a Kotlin test with @Ignore and a Java test with @Disabled each count as skipped"
+    },
+    {
+      "id": "G3",
+      "text": "A Gradle project is detected and its unit tests run through the project's own wrapper; without a wrapper, no command is guessed.",
+      "observable_by": "detectStack returns stack gradle with ./gradlew test (testDebugUnitTest for Android), and an empty gate when gradlew is absent"
+    }
+  ],
+  "units": [
+    {
+      "id": "gate",
+      "surface": "kernel/core/gate.mjs",
+      "tests": "test/gate.test.mjs",
+      "cases": [
+        { "id": "gradle-names", "description": "Gradle failing names extracted, task/build lines excluded", "probe": true, "maps_to_clause": "G1", "test_name": "gate extracts gradle failing test names and ignores task and build lines" }
+      ]
+    },
+    {
+      "id": "quality",
+      "surface": "kernel/core/quality.mjs",
+      "tests": "test/quality.test.mjs",
+      "cases": [
+        { "id": "junit-skips", "description": "@Ignore and @Disabled are reported as skipped", "probe": true, "maps_to_clause": "G2", "test_name": "integrity finds JUnit skips in Kotlin and Java tests" }
+      ]
+    },
+    {
+      "id": "stacks",
+      "surface": "kernel/core/stacks.mjs",
+      "tests": "test/stacks.test.mjs",
+      "cases": [
+        { "id": "gradle-detect", "description": "gradle detected, wrapper used, Android gets testDebugUnitTest", "maps_to_clause": "G3", "test_name": "detects a gradle project and runs its unit tests through the wrapper" },
+        { "id": "no-wrapper-no-guess", "description": "no wrapper means no command", "probe": true, "maps_to_clause": "G3", "test_name": "a gradle build with no wrapper resolves no gate rather than guessing a global gradle" }
+      ]
+    }
+  ],
+  "non_goals": [
+    "Assertion-free detection for Kotlin test bodies; the declaration slicer is JS/Python-shaped and extending it is separate work.",
+    "Parsing JUnit XML reports; the console format is what the gate already captures."
+  ]
+}
